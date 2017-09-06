@@ -15,7 +15,7 @@ class PollHandlerTest {
                     ReceivedResponse response = httpClient.requestSpec(request ->
                             request.body(body -> body
                                     .type("application/json")
-                                    .text("{\"topic\":\"Sport to play on Friday\"}"))
+                                    .text("{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}"))
                     ).post();
                     assertEquals(201, response.getStatusCode());
                 });
