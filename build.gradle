@@ -38,5 +38,3 @@ junitPlatform {
     enableStandardTestTask true
     reportsDir file('build/test-results/junit-platform') // this is the default
 }
-
-mainClassName = "my.app.Main"
