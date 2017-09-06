@@ -1,7 +1,6 @@
 package myratpackexamples.jsonparser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -12,8 +11,7 @@ class PersonTest {
     @Test
     public void shouldBeAbleToDeserializePerson() throws IOException {
         // given
-        ObjectMapper objectMapper = new ObjectMapper()
-                .registerModule(new ParameterNamesModule());
+        ObjectMapper objectMapper = new ObjectMapper();
 
         // when
         Person actual = objectMapper.readValue(
