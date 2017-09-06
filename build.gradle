@@ -16,7 +16,17 @@ repositories {
   jcenter()
 }
 
+compileJava {
+    options.compilerArgs += '-parameters'
+}
+
+compileTestJava {
+    options.compilerArgs += '-parameters'
+}
+
 dependencies {
+  compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: '2.9.0'
+
   runtime "org.slf4j:slf4j-simple:1.7.25"
 
   testCompile "org.junit.jupiter:junit-jupiter-api:5.0.0-RC2"

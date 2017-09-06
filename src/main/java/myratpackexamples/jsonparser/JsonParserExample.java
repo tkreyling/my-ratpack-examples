@@ -1,24 +1,16 @@
 package myratpackexamples.jsonparser;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import ratpack.handling.Context;
 
 import static ratpack.jackson.Jackson.fromJson;
 
 public class JsonParserExample {
-    public static class Person {
-        private final String name;
-
-        public Person(@JsonProperty("name") String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
     public static void extractName(Context context) {
-        context.render(context.parse(fromJson(Person.class)).map(Person::getName));
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new ParameterNamesModule());
+
+        context.render(context.parse(fromJson(Person.class, objectMapper)).map(Person::getFirstname));
     }
 }

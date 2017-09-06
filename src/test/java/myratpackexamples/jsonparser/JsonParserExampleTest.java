@@ -13,7 +13,7 @@ class JsonParserExampleTest {
                 .fromHandler(JsonParserExample::extractName)
                 .test(httpClient -> {
                     ReceivedResponse response = httpClient.requestSpec(request ->
-                            request.body(body -> body.type("application/json").text("{\"name\":\"John\"}"))
+                            request.body(body -> body.type("application/json").text("{\"firstname\":\"John\"}"))
                     ).post();
                     assertEquals("John", response.getBody().getText());
                 });
