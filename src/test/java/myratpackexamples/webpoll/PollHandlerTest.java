@@ -20,4 +20,18 @@ class PollHandlerTest {
                     assertEquals(201, response.getStatusCode());
                 });
     }
+
+    @Test
+    void postWithEmptyTopicIsRejected() throws Exception {
+        EmbeddedApp
+                .fromHandler(PollHandler::createPoll)
+                .test(httpClient -> {
+                    ReceivedResponse response = httpClient.requestSpec(request ->
+                            request.body(body -> body
+                                    .type("application/json")
+                                    .text("{\"topic\":\"\"}"))
+                    ).post();
+                    assertEquals(400, response.getStatusCode());
+                });
+    }
 }
