@@ -1,5 +1,7 @@
 package myratpackexamples.webpoll;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.jupiter.api.Test;
 import ratpack.http.client.ReceivedResponse;
 import ratpack.test.embed.EmbeddedApp;
@@ -16,7 +18,9 @@ class PollHandlerTest {
                 .fromHandler(PollHandler::createPoll)
                 .test(httpClient -> {
                     ReceivedResponse response = post(httpClient, pollJson);
-                    assertEquals(201, response.getStatusCode());
+
+                    assertEquals(HttpResponseStatus.CREATED.code(), response.getStatusCode());
+                    assertTrue(response.getHeaders().contains(HttpHeaderNames.LOCATION));
                 });
     }
 
@@ -28,7 +32,7 @@ class PollHandlerTest {
                 .fromHandler(PollHandler::createPoll)
                 .test(httpClient -> {
                     ReceivedResponse response = post(httpClient, pollJson);
-                    assertEquals(400, response.getStatusCode());
+                    assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.getStatusCode());
                 });
     }
 
