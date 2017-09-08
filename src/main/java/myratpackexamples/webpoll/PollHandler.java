@@ -2,11 +2,20 @@ package myratpackexamples.webpoll;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import ratpack.handling.Chain;
 import ratpack.handling.Context;
+import ratpack.server.RatpackServer;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static ratpack.jackson.Jackson.fromJson;
+import static ratpack.jackson.Jackson.json;
 
 public class PollHandler {
+    private static Map<String, Poll> polls = new HashMap<>();
+
     public static void createPoll(Context context) {
         context.parse(fromJson(Poll.class))
                 .then(poll -> {
@@ -14,10 +23,29 @@ public class PollHandler {
                         context.getResponse().status(HttpResponseStatus.BAD_REQUEST.code());
                         context.getResponse().send("");
                     } else {
-                        context.getResponse().getHeaders().add(HttpHeaderNames.LOCATION, "123");
+                        String pollId = UUID.randomUUID().toString();
+
+                        polls.put(pollId, poll);
+
+                        context.getResponse().getHeaders().add(HttpHeaderNames.LOCATION, pollId);
                         context.getResponse().status(HttpResponseStatus.CREATED.code());
                         context.getResponse().send("");
                     }
                 });
+    }
+
+    public static void retrievePoll(Context context) {
+        String pollId = context.getPathTokens().get("poll");
+        context.render(json(polls.get(pollId)));
+    }
+
+    public static Chain pollHandlerChain(Chain chain) {
+        return chain
+                .post(PollHandler::createPoll)
+                .get(":poll", PollHandler::retrievePoll);
+    }
+
+    public static void main(String... args) throws Exception {
+        RatpackServer.start(server -> server.handlers(PollHandler::pollHandlerChain));
     }
 }
