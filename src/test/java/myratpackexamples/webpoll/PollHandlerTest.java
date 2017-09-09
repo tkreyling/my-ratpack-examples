@@ -20,9 +20,9 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}";
 
         EmbeddedApp
-                .fromHandler(PollHandler::createPoll)
+                .of(server -> server.handlers(PollHandler::pollHandlerChain))
                 .test(httpClient -> {
-                    ReceivedResponse response = post(httpClient, pollJson);
+                    ReceivedResponse response = post(httpClient, "poll", pollJson);
 
                     assertEquals(HttpResponseStatus.CREATED.code(), response.getStatusCode());
                     assertTrue(response.getHeaders().contains(HttpHeaderNames.LOCATION));
@@ -34,9 +34,9 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"\"}";
 
         EmbeddedApp
-                .fromHandler(PollHandler::createPoll)
+                .of(server -> server.handlers(PollHandler::pollHandlerChain))
                 .test(httpClient -> {
-                    ReceivedResponse response = post(httpClient, pollJson);
+                    ReceivedResponse response = post(httpClient, "poll", pollJson);
                     assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.getStatusCode());
                 });
     }
@@ -47,7 +47,7 @@ class PollHandlerTest {
 
         EmbeddedApp.of(server -> server.handlers(PollHandler::pollHandlerChain))
                 .test(httpClient -> {
-                    ReceivedResponse createResponse = post(httpClient, pollJson);
+                    ReceivedResponse createResponse = post(httpClient, "poll", pollJson);
 
                     String pollUri = createResponse.getHeaders().get(HttpHeaderNames.LOCATION);
 
@@ -63,9 +63,9 @@ class PollHandlerTest {
         return objectMapper.readValue(bodyText, type);
     }
 
-    private ReceivedResponse post(TestHttpClient httpClient, String pollJson) {
+    private ReceivedResponse post(TestHttpClient httpClient, String uri, String pollJson) {
         return httpClient
                 .requestSpec(request -> request.body(body -> body.type("application/json").text(pollJson)))
-                .post();
+                .post(uri);
     }
 }

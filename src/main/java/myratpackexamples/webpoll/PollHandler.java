@@ -27,7 +27,7 @@ public class PollHandler {
 
                         polls.put(pollId, poll);
 
-                        context.getResponse().getHeaders().add(HttpHeaderNames.LOCATION, pollId);
+                        context.getResponse().getHeaders().add(HttpHeaderNames.LOCATION, "poll/" + pollId);
                         context.getResponse().status(HttpResponseStatus.CREATED.code());
                         context.getResponse().send("");
                     }
@@ -41,8 +41,8 @@ public class PollHandler {
 
     public static Chain pollHandlerChain(Chain chain) {
         return chain
-                .post(PollHandler::createPoll)
-                .get(":poll", PollHandler::retrievePoll);
+                .post("poll", PollHandler::createPoll)
+                .get("poll/:poll", PollHandler::retrievePoll);
     }
 
     public static void main(String... args) throws Exception {
