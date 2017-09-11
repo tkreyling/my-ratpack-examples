@@ -21,7 +21,7 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}";
 
         EmbeddedApp
-                .of(server -> server.handlers(PollHandler::pollHandlerChain))
+                .of(server -> server.handlers(PollHandlers::addToChain))
                 .test(httpClient -> {
                     ReceivedResponse response = post(httpClient, "poll", pollJson);
 
@@ -35,7 +35,7 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"\"}";
 
         EmbeddedApp
-                .of(server -> server.handlers(PollHandler::pollHandlerChain))
+                .of(server -> server.handlers(PollHandlers::addToChain))
                 .test(httpClient -> {
                     ReceivedResponse response = post(httpClient, "poll", pollJson);
                     assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.getStatusCode());
@@ -46,7 +46,7 @@ class PollHandlerTest {
     void systemRetainsValidNewPoll() throws Exception {
         String pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}";
 
-        EmbeddedApp.of(server -> server.handlers(PollHandler::pollHandlerChain))
+        EmbeddedApp.of(server -> server.handlers(PollHandlers::addToChain))
                 .test(httpClient -> {
                     ReceivedResponse createResponse = post(httpClient, "poll", pollJson);
 
