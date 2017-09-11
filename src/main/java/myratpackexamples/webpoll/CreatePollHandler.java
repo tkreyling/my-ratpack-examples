@@ -3,13 +3,15 @@ package myratpackexamples.webpoll;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import ratpack.handling.Context;
+import ratpack.handling.Handler;
 
 import java.util.UUID;
 
 import static ratpack.jackson.Jackson.fromJson;
 
-public class CreatePollHandler {
-    public static void createPoll(Context context) {
+public class CreatePollHandler implements Handler {
+    @Override
+    public void handle(Context context) throws Exception {
         context.parse(fromJson(Poll.class))
                 .then(poll -> {
                     if (poll.getTopic() == null || poll.getTopic().equals("")) {
