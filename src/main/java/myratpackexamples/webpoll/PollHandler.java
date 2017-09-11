@@ -3,7 +3,6 @@ package myratpackexamples.webpoll;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import ratpack.handling.Context;
-import ratpack.server.RatpackServer;
 
 import java.util.UUID;
 
@@ -33,9 +32,5 @@ public class PollHandler {
     public static void retrievePoll(Context context) {
         String pollId = context.getPathTokens().get("poll");
         context.render(json(PollRepository.retrievePoll(pollId)));
-    }
-
-    public static void main(String... args) throws Exception {
-        RatpackServer.start(server -> server.handlers(PollHandlers::addToChain));
     }
 }
