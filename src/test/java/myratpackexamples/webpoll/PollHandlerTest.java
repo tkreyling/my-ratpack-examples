@@ -10,6 +10,7 @@ import ratpack.test.http.TestHttpClient;
 
 import java.io.IOException;
 
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PollHandlerTest {
@@ -54,6 +55,7 @@ class PollHandlerTest {
                     Poll poll = get(httpClient, pollUri, Poll.class);
 
                     assertEquals("Sport to play on Friday", poll.getTopic());
+                    assertEquals(asList("basketball"), poll.getOptions());
                 });
     }
 
