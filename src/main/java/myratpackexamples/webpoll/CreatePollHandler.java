@@ -7,10 +7,8 @@ import ratpack.handling.Context;
 import java.util.UUID;
 
 import static ratpack.jackson.Jackson.fromJson;
-import static ratpack.jackson.Jackson.json;
 
-public class PollHandler {
-
+public class CreatePollHandler {
     public static void createPoll(Context context) {
         context.parse(fromJson(Poll.class))
                 .then(poll -> {
@@ -27,10 +25,5 @@ public class PollHandler {
                         context.getResponse().send("");
                     }
                 });
-    }
-
-    public static void retrievePoll(Context context) {
-        String pollId = context.getPathTokens().get("poll");
-        context.render(json(PollRepository.retrievePoll(pollId)));
     }
 }
