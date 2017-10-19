@@ -12,14 +12,15 @@ import static ratpack.jackson.Jackson.fromJson;
 public class CreatePollHandler implements Handler {
     @Override
     public void handle(Context context) throws Exception {
-        context.parse(fromJson(Poll.class))
-                .then(poll -> {
-                    if (poll.getTopic() == null || poll.getTopic().equals("")) {
+        context.parse(fromJson(PollRequest.class))
+                .then(pollRequest -> {
+                    if (pollRequest.getTopic() == null || pollRequest.getTopic().equals("")) {
                         context.getResponse().status(HttpResponseStatus.BAD_REQUEST.code());
                         context.getResponse().send("");
                     } else {
                         String pollId = UUID.randomUUID().toString();
 
+                        Poll poll = new Poll(pollRequest.getTopic(), pollRequest.getOptions());
                         PollRepository.storePoll(poll, pollId);
 
                         context.getResponse().getHeaders().add(HttpHeaderNames.LOCATION, "poll/" + pollId);
