@@ -20,8 +20,8 @@ public class CreatePollHandler implements Handler {
                     } else {
                         String pollId = UUID.randomUUID().toString();
 
-                        Poll poll = new Poll(pollRequest.getTopic(), pollRequest.getOptions());
-                        PollRepository.storePoll(poll, pollId);
+                        Poll poll = new Poll(pollId, pollRequest.getTopic(), pollRequest.getOptions());
+                        PollRepository.storePoll(poll);
 
                         context.getResponse().getHeaders().add(HttpHeaderNames.LOCATION, "poll/" + pollId);
                         context.getResponse().status(HttpResponseStatus.CREATED.code());
