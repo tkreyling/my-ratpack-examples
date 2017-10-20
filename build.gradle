@@ -1,11 +1,11 @@
 buildscript {
-  repositories {
-    jcenter()
-  }
-  dependencies {
-    classpath "io.ratpack:ratpack-gradle:1.5.0"
-    classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-RC2'
-  }
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "io.ratpack:ratpack-gradle:1.5.0"
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-RC2'
+    }
 }
 
 apply plugin: "io.ratpack.ratpack-java"
@@ -13,7 +13,7 @@ apply plugin: "idea"
 apply plugin: 'org.junit.platform.gradle.plugin'
 
 repositories {
-  jcenter()
+    jcenter()
 }
 
 compileJava {
@@ -25,17 +25,17 @@ compileTestJava {
 }
 
 dependencies {
-  compileOnly "org.projectlombok:lombok:1.16.12"
+    compileOnly "org.projectlombok:lombok:1.16.12"
 
-  compile "io.vavr:vavr:0.9.0"
+    compile "io.vavr:vavr:0.9.0"
 
-  runtime "org.slf4j:slf4j-simple:1.7.25"
+    runtime "org.slf4j:slf4j-simple:1.7.25"
 
-  testCompile "org.junit.jupiter:junit-jupiter-api:5.0.0-RC2"
-  testCompile "org.junit.jupiter:junit-jupiter-params:5.0.0-RC2"
+    testCompile "org.junit.jupiter:junit-jupiter-api:5.0.0-RC2"
+    testCompile "org.junit.jupiter:junit-jupiter-params:5.0.0-RC2"
 
-  testRuntime "org.junit.platform:junit-platform-launcher:1.0.0-RC2"
-  testRuntime "org.junit.jupiter:junit-jupiter-engine:5.0.0-RC2"
+    testRuntime "org.junit.platform:junit-platform-launcher:1.0.0-RC2"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:5.0.0-RC2"
 }
 
 junitPlatform {
