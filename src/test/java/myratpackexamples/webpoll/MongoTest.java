@@ -16,31 +16,51 @@ import org.junit.jupiter.api.Test;
 import ratpack.exec.Operation;
 import ratpack.test.exec.ExecHarness;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class MongoTest {
-    @Test
-    void testDb() throws Exception {
-        ExecHarness.executeSingle(Operation.of(() -> {
+
+    private static class InMemoryMongoDb implements Closeable {
+        private final MongodExecutable mongodExecutable;
+
+        private final String bindIp = "localhost";
+        private final int port = 12345;
+
+        public InMemoryMongoDb() throws IOException {
             MongodStarter starter = MongodStarter.getDefaultInstance();
 
-            String bindIp = "localhost";
-            int port = 12345;
             IMongodConfig mongodConfig = new MongodConfigBuilder()
                     .version(Version.Main.PRODUCTION)
                     .net(new Net(bindIp, port, Network.localhostIsIPv6()))
                     .build();
 
-            MongodExecutable mongodExecutable = null;
-            try {
-                CountDownLatch latch = new CountDownLatch(1);
+            mongodExecutable = starter.prepare(mongodConfig);
+            mongodExecutable.start();
+        }
 
-                mongodExecutable = starter.prepare(mongodConfig);
-                mongodExecutable.start();
+        public String getConnectionString() {
+            return "mongodb://" + bindIp + ":" + port;
+        }
 
-                MongoClient mongo = MongoClients.create("mongodb://" + bindIp + ":" + port);
+        @Override
+        public void close() throws IOException {
+            if (mongodExecutable != null)
+                mongodExecutable.stop();
+        }
+    }
+
+    @Test
+    void testDb() throws Exception {
+        ExecHarness.executeSingle(Operation.of(() -> {
+            try (InMemoryMongoDb inMemoryMongoDb = new InMemoryMongoDb()) {
+
+                MongoClient mongo = MongoClients.create(inMemoryMongoDb.getConnectionString());
                 MongoDatabase database = mongo.getDatabase("test");
+
+                CountDownLatch latch = new CountDownLatch(1);
 
                 MongoCollection<Document> collection = database.getCollection("test");
 
@@ -56,10 +76,6 @@ public class MongoTest {
                         });
 
                 latch.await(2, TimeUnit.SECONDS);
-
-            } finally {
-                if (mongodExecutable != null)
-                    mongodExecutable.stop();
             }
         }));
     }
