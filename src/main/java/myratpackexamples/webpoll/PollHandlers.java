@@ -19,6 +19,7 @@ public class PollHandlers {
     }
 
     public static void main(String... args) throws Exception {
+        new InMemoryMongoDb();
         RatpackServer.start(PollHandlers::setupServer);
     }
 }
