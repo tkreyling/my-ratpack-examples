@@ -9,7 +9,7 @@ public class PollHandlers {
     private static Chain addToChain(Chain chain) {
         return chain
                 .post("poll", CreatePollHandler.class)
-                .get("poll/:poll", new RetrievePollHandler());
+                .get("poll/:poll", RetrievePollHandler.class);
     }
 
     public static RatpackServerSpec setupServer(RatpackServerSpec server) {

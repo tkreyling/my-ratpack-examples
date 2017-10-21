@@ -25,7 +25,7 @@ public class CreatePollHandler implements Handler {
     public void handle(Context context) throws Exception {
         context.parse(fromJson(PollRequest.class)).then(pollRequest ->
                 mapRequestToDomainObject(pollRequest)
-                        .peek(PollRepository::storePoll)
+                        .peek(pollRepository::storePoll)
                         .toEither()
                         .peek(poll -> createSuccessResponse(context, poll))
                         .peekLeft(errors -> createErrorResponse(context))

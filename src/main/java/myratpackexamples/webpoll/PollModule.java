@@ -7,5 +7,6 @@ public class PollModule implements Module {
     @Override
     public void configure(Binder binder) {
         binder.bind(CreatePollHandler.class);
+        binder.bind(RetrievePollHandler.class);
     }
 }
