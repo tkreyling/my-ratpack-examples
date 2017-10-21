@@ -22,7 +22,7 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}";
 
         EmbeddedApp
-                .of(PollHandlers::setupServer)
+                .of(PollApplication::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse response = post(httpClient, "poll", pollJson);
 
@@ -36,7 +36,7 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"\"}";
 
         EmbeddedApp
-                .of(PollHandlers::setupServer)
+                .of(PollApplication::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse response = post(httpClient, "poll", pollJson);
                     assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.getStatusCode());
@@ -48,7 +48,7 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}";
 
         EmbeddedApp
-                .of(PollHandlers::setupServer)
+                .of(PollApplication::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse createResponse = post(httpClient, "poll", pollJson);
 

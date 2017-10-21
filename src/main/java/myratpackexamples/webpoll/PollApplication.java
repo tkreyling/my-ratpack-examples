@@ -5,8 +5,8 @@ import ratpack.handling.Chain;
 import ratpack.server.RatpackServer;
 import ratpack.server.RatpackServerSpec;
 
-public class PollHandlers {
-    private static Chain addToChain(Chain chain) {
+public class PollApplication {
+    private static Chain addHandlersToChain(Chain chain) {
         return chain
                 .post("poll", CreatePollHandler.class)
                 .get("poll/:poll", RetrievePollHandler.class);
@@ -15,11 +15,11 @@ public class PollHandlers {
     public static RatpackServerSpec setupServer(RatpackServerSpec server) {
         return server
                 .registry(Guice.registry(b -> b.module(PollModule.class)))
-                .handlers(PollHandlers::addToChain);
+                .handlers(PollApplication::addHandlersToChain);
     }
 
     public static void main(String... args) throws Exception {
         new InMemoryMongoDb();
-        RatpackServer.start(PollHandlers::setupServer);
+        RatpackServer.start(PollApplication::setupServer);
     }
 }
