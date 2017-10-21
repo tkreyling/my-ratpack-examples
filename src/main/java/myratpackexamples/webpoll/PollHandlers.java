@@ -1,16 +1,24 @@
 package myratpackexamples.webpoll;
 
+import ratpack.guice.Guice;
 import ratpack.handling.Chain;
 import ratpack.server.RatpackServer;
+import ratpack.server.RatpackServerSpec;
 
 public class PollHandlers {
-    public static Chain addToChain(Chain chain) {
+    private static Chain addToChain(Chain chain) {
         return chain
-                .post("poll", new CreatePollHandler())
+                .post("poll", CreatePollHandler.class)
                 .get("poll/:poll", new RetrievePollHandler());
     }
 
+    public static RatpackServerSpec setupServer(RatpackServerSpec server) {
+        return server
+                .registry(Guice.registry(b -> b.module(PollModule.class)))
+                .handlers(PollHandlers::addToChain);
+    }
+
     public static void main(String... args) throws Exception {
-        RatpackServer.start(server -> server.handlers(PollHandlers::addToChain));
+        RatpackServer.start(PollHandlers::setupServer);
     }
 }

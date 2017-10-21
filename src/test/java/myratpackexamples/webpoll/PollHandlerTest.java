@@ -11,7 +11,8 @@ import ratpack.test.http.TestHttpClient;
 import java.io.IOException;
 
 import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PollHandlerTest {
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -21,7 +22,7 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}";
 
         EmbeddedApp
-                .of(server -> server.handlers(PollHandlers::addToChain))
+                .of(PollHandlers::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse response = post(httpClient, "poll", pollJson);
 
@@ -35,7 +36,7 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"\"}";
 
         EmbeddedApp
-                .of(server -> server.handlers(PollHandlers::addToChain))
+                .of(PollHandlers::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse response = post(httpClient, "poll", pollJson);
                     assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.getStatusCode());
@@ -46,7 +47,8 @@ class PollHandlerTest {
     void systemRetainsValidNewPoll() throws Exception {
         String pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}";
 
-        EmbeddedApp.of(server -> server.handlers(PollHandlers::addToChain))
+        EmbeddedApp
+                .of(PollHandlers::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse createResponse = post(httpClient, "poll", pollJson);
 

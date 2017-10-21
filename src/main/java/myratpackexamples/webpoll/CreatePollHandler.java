@@ -1,9 +1,12 @@
 package myratpackexamples.webpoll;
 
+import com.google.inject.Inject;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
+import lombok.AllArgsConstructor;
+import lombok.Value;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
 
@@ -13,7 +16,11 @@ import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static ratpack.jackson.Jackson.fromJson;
 
+@Value
+@AllArgsConstructor(onConstructor=@__(@Inject))
 public class CreatePollHandler implements Handler {
+    PollRepository pollRepository;
+
     @Override
     public void handle(Context context) throws Exception {
         context.parse(fromJson(PollRequest.class)).then(pollRequest ->
