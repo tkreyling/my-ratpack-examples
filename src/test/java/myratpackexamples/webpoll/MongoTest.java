@@ -1,5 +1,6 @@
 package myratpackexamples.webpoll;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
@@ -12,9 +13,12 @@ import ratpack.test.exec.ExecHarness;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class MongoTest {
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void testDb() throws Exception {
@@ -28,10 +32,13 @@ public class MongoTest {
 
                 MongoCollection<Document> collection = database.getCollection("test");
 
-                Document doc = new Document("name", "MongoDB")
-                        .append("type", "database")
-                        .append("count", 1)
-                        .append("info", new Document("x", 203).append("y", 102));
+                Poll poll = new Poll(null, "Sport to play on Friday", asList("basketball"));
+                String pollJson = objectMapper.writeValueAsString(poll);
+
+                Document doc = Document.parse(pollJson);
+
+                assertEquals("Sport to play on Friday", doc.getString("topic"));
+                assertEquals(asList("basketball"), doc.get("options"));
 
                 RatpackMongoClient.insertOne(collection, doc)
                         .result(voidExecResult -> {
