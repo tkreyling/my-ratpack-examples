@@ -10,8 +10,9 @@ import static ratpack.exec.Promise.value;
 public class PollRepository {
     private static Map<String, Poll> polls = new HashMap<>();
 
-    public void storePoll(Poll poll) {
+    public Promise<Void> storePoll(Poll poll) {
         polls.put(poll.getId(), poll);
+        return value(null);
     }
 
     public Promise<Poll> retrievePoll(String pollId) {
