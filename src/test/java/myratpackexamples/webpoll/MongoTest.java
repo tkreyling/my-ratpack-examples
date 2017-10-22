@@ -12,6 +12,8 @@ import ratpack.test.exec.ExecHarness;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class MongoTest {
 
     @Test
@@ -35,6 +37,8 @@ public class MongoTest {
                         .result(voidExecResult -> {
                             System.out.println("inserted!");
                             latch.countDown();
+
+                            assertNotNull(doc.get("_id"));
                         });
 
                 latch.await(2, TimeUnit.SECONDS);
