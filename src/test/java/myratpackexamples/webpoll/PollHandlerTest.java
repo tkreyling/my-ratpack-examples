@@ -3,6 +3,9 @@ package myratpackexamples.webpoll;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ratpack.http.client.ReceivedResponse;
 import ratpack.test.embed.EmbeddedApp;
@@ -16,6 +19,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PollHandlerTest {
     private ObjectMapper objectMapper = new ObjectMapper();
+
+    private static InMemoryMongoDb inMemoryMongoDb;
+
+    @BeforeAll
+    static void setUp() throws Exception {
+        inMemoryMongoDb = new InMemoryMongoDb();
+    }
+
+    @AfterAll
+    static void tearDown() throws Exception {
+        inMemoryMongoDb.close();
+    }
 
     @Test
     void validPostCreatesPoll() throws Exception {

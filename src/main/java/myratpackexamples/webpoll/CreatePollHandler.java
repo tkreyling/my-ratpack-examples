@@ -10,8 +10,6 @@ import lombok.Value;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
 
-import java.util.UUID;
-
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static ratpack.jackson.Jackson.fromJson;
@@ -25,9 +23,9 @@ public class CreatePollHandler implements Handler {
     public void handle(Context context) throws Exception {
         context.parse(fromJson(PollRequest.class)).then(pollRequest ->
                 mapRequestToDomainObject(pollRequest)
-                        .peek(pollRepository::storePoll)
+                        .map(pollRepository::storePoll)
                         .toEither()
-                        .peek(poll -> createSuccessResponse(context, poll))
+                        .peek(pollPromise -> pollPromise.then(poll -> createSuccessResponse(context, poll)))
                         .peekLeft(errors -> createErrorResponse(context))
         );
     }
@@ -43,13 +41,11 @@ public class CreatePollHandler implements Handler {
         context.getResponse().send("");
     }
 
-    private static Validation<Seq<String>, Poll> mapRequestToDomainObject(PollRequest pollRequest) {
-        String pollId = UUID.randomUUID().toString();
+    private static Validation<Seq<String>, PollRequest> mapRequestToDomainObject(PollRequest pollRequest) {
         return Validation.combine(
-                valid(pollId),
                 createTopic(pollRequest.getTopic()),
                 valid(pollRequest.getOptions())
-        ).ap(Poll::new);
+        ).ap(PollRequest::new);
     }
 
     private static Validation<String, String> createTopic(String topic) {
