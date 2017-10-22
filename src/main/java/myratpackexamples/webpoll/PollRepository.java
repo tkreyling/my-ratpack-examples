@@ -1,7 +1,11 @@
 package myratpackexamples.webpoll;
 
+import ratpack.exec.Promise;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import static ratpack.exec.Promise.value;
 
 public class PollRepository {
     private static Map<String, Poll> polls = new HashMap<>();
@@ -10,7 +14,7 @@ public class PollRepository {
         polls.put(poll.getId(), poll);
     }
 
-    public Poll retrievePoll(String pollId) {
-        return polls.get(pollId);
+    public Promise<Poll> retrievePoll(String pollId) {
+        return value(polls.get(pollId));
     }
 }

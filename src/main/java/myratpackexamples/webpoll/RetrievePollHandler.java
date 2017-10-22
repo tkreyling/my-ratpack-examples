@@ -5,8 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
-
-import static ratpack.jackson.Jackson.json;
+import ratpack.jackson.Jackson;
 
 @Value
 @AllArgsConstructor(onConstructor=@__(@Inject))
@@ -16,6 +15,9 @@ public class RetrievePollHandler implements Handler {
     @Override
     public void handle(Context context) throws Exception {
         String pollId = context.getPathTokens().get("poll");
-        context.render(json(pollRepository.retrievePoll(pollId)));
+
+        pollRepository.retrievePoll(pollId)
+                .map(Jackson::json)
+                .then(context::render);
     }
 }
