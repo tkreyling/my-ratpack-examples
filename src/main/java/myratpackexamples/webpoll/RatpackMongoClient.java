@@ -26,8 +26,11 @@ public class RatpackMongoClient {
             if (throwable != null) {
                 downstream.error(throwable);
             } else {
-                if (result.size() != 1) throw new RuntimeException("Exactly one element expected!");
-                downstream.success(result.get(0));
+                if (result.size() != 1) {
+                    downstream.error(new RuntimeException("Exactly one element expected!"));
+                } else {
+                    downstream.success(result.get(0));
+                }
             }
         }));
     }

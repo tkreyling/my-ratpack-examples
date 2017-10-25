@@ -76,6 +76,28 @@ class PollHandlerTest {
                 });
     }
 
+    @Test
+    void invalidPollId() throws Exception {
+        EmbeddedApp
+                .of(PollApplication::setupServer)
+                .test(httpClient -> {
+                    ReceivedResponse response = httpClient.get("poll/999999999");
+
+                    assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.getStatusCode());
+                });
+    }
+
+    @Test
+    void unknownPollId() throws Exception {
+        EmbeddedApp
+                .of(PollApplication::setupServer)
+                .test(httpClient -> {
+                    ReceivedResponse response = httpClient.get("poll/59ecf1ec9bdc9640f8b4adca");
+
+                    assertEquals(HttpResponseStatus.NOT_FOUND.code(), response.getStatusCode());
+                });
+    }
+
     private <T> T get(TestHttpClient httpClient, String uri, Class<T> type) throws IOException {
         ReceivedResponse response = httpClient.get(uri);
         String bodyText = response.getBody().getText();

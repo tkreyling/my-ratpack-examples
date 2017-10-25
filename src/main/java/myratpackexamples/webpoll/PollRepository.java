@@ -7,12 +7,15 @@ import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import io.vavr.control.Validation;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import ratpack.exec.Promise;
 
 import java.util.List;
 
+import static io.vavr.control.Validation.invalid;
+import static io.vavr.control.Validation.valid;
 import static ratpack.exec.Promise.error;
 
 public class PollRepository {
@@ -34,11 +37,21 @@ public class PollRepository {
         }
     }
 
-    public Promise<Poll> retrievePoll(String pollId) {
+    public Validation<String, Promise<Poll>> retrievePoll(String pollId) {
         MongoCollection<Document> collection = getPollsCollection();
 
-        return RatpackMongoClient.findOne(collection, Filters.eq("_id", new ObjectId(pollId)))
-                .map(this::mapBsonDocumentToDomainObject);
+        return createMongoObjectId(pollId)
+                .map(objectId -> RatpackMongoClient.findOne(collection, Filters.eq("_id", objectId))
+                        .map(this::mapBsonDocumentToDomainObject));
+    }
+
+    private Validation<String, ObjectId> createMongoObjectId(String hexIdString) {
+        try {
+            return valid(new ObjectId(hexIdString));
+
+        } catch (IllegalArgumentException e) {
+            return invalid("Non valid id!");
+        }
     }
 
     private Poll mapBsonDocumentToDomainObject(Document document) throws java.io.IOException {
