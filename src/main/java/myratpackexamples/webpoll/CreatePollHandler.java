@@ -25,7 +25,10 @@ public class CreatePollHandler implements Handler {
                 mapRequestToDomainObject(pollRequest)
                         .map(pollRepository::storePoll)
                         .toEither()
-                        .peek(pollPromise -> pollPromise.then(poll -> createSuccessResponse(context, poll)))
+                        .peek(pollPromise -> pollPromise
+                                .onError(throwable -> createErrorResponse(context))
+                                .then(poll -> createSuccessResponse(context, poll))
+                        )
                         .peekLeft(errors -> createErrorResponse(context))
         );
     }
