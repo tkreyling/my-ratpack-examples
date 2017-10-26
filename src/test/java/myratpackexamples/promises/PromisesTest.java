@@ -1,8 +1,12 @@
 package myratpackexamples.promises;
 
 import org.junit.jupiter.api.Test;
+import ratpack.exec.ExecResult;
 import ratpack.exec.Promise;
 import ratpack.test.exec.ExecHarness;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class PromisesTest {
@@ -17,7 +21,7 @@ public class PromisesTest {
         assertSame(exception, error);
     }
 
-    private Promise<Object> doSomeAsyncWorkWithError(Exception exception) {
+    private Promise<Integer> doSomeAsyncWorkWithError(Exception exception) {
         return Promise.error(exception);
     }
 
@@ -32,7 +36,23 @@ public class PromisesTest {
         assertSame(exception, error);
     }
 
-    private Promise<Object> doSomeAsyncWorkAndThrowException(Exception exception) throws Exception {
+    private Promise<Integer> doSomeAsyncWorkAndThrowException(Exception exception) throws Exception {
         throw exception;
+    }
+
+    @Test
+    void map_error() throws Exception {
+        Exception exception = new Exception();
+
+        ExecResult<Integer> execResult = ExecHarness
+                .yieldSingle(e -> {
+                    Promise<Integer> beforeMapError = doSomeAsyncWorkWithError(exception);
+                    //noinspection UnnecessaryLocalVariable
+                    Promise<Integer> afterMapError = beforeMapError.mapError(t -> 500);
+                    return afterMapError;
+                });
+
+        assertEquals(500, (Object) execResult.getValue());
+        assertNull(execResult.getThrowable());
     }
 }
