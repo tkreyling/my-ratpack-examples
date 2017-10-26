@@ -19,12 +19,11 @@ public class RetrievePollHandler implements Handler {
         String pollId = context.getPathTokens().get("poll");
 
         pollRepository.retrievePoll(pollId)
-                .toEither()
-                .peek(pollPromise -> pollPromise
-                        .onError(error -> createNotFoundResponse(context))
-                        .then(poll -> createSuccessResponse(context, poll))
-                )
-                .peekLeft(error -> createBadRequestResponse(context));
+                .then(validation -> validation
+                        .toEither()
+                        .peek(poll -> createSuccessResponse(context, poll))
+                        .peekLeft(error -> createFailureResponse(context, error))
+                );
     }
 
     private static void createSuccessResponse(Context context, Poll poll) {
@@ -33,13 +32,14 @@ public class RetrievePollHandler implements Handler {
         context.render(Jackson.json(poll));
     }
 
-    private static void createBadRequestResponse(Context context) {
-        context.getResponse().status(HttpResponseStatus.BAD_REQUEST.code());
-        context.getResponse().send("");
-    }
-
-    private static void createNotFoundResponse(Context context) {
-        context.getResponse().status(HttpResponseStatus.NOT_FOUND.code());
+    private static void createFailureResponse(Context context, String error) {
+        if (error.equals("RatpackMongoClient.ExactlyOneElementExpected()")) {
+            context.getResponse().status(HttpResponseStatus.NOT_FOUND.code());
+        } else if (error.equals("Non valid id!")) {
+            context.getResponse().status(HttpResponseStatus.BAD_REQUEST.code());
+        } else {
+            context.getResponse().status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+        }
         context.getResponse().send("");
     }
 }

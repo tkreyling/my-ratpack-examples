@@ -8,6 +8,7 @@ import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import io.vavr.control.Validation;
+import myratpackexamples.promises.ValidationUtil;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import ratpack.exec.Promise;
@@ -37,12 +38,18 @@ public class PollRepository {
         }
     }
 
-    public Validation<String, Promise<Poll>> retrievePoll(String pollId) {
+    public Promise<Validation<String, Poll>> retrievePoll(String pollId) {
         MongoCollection<Document> collection = getPollsCollection();
 
-        return createMongoObjectId(pollId)
-                .map(objectId -> RatpackMongoClient.findOne(collection, Filters.eq("_id", objectId))
-                        .map(this::mapBsonDocumentToDomainObject));
+        Validation<String, ObjectId> mongoObjectId = createMongoObjectId(pollId);
+
+        return ValidationUtil.flatMapPromise(mongoObjectId, objectId ->
+                RatpackMongoClient.findOne(collection, Filters.eq("_id", objectId))
+                        .map(validation -> validation
+                                .mapError(Object::toString)
+                                .map(this::mapBsonDocumentToDomainObject)
+                        ));
+
     }
 
     private Validation<String, ObjectId> createMongoObjectId(String hexIdString) {
@@ -54,7 +61,7 @@ public class PollRepository {
         }
     }
 
-    private Poll mapBsonDocumentToDomainObject(Document document) throws java.io.IOException {
+    private Poll mapBsonDocumentToDomainObject(Document document) {
         //noinspection unchecked
         return new Poll(
                 document.getObjectId("_id").toHexString(),

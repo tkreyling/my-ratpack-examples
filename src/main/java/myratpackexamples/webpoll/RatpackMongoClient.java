@@ -1,15 +1,32 @@
 package myratpackexamples.webpoll;
 
 import com.mongodb.async.client.MongoCollection;
+import io.vavr.control.Validation;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import ratpack.exec.Promise;
 
 import java.util.ArrayList;
 
+import static io.vavr.control.Validation.invalid;
+import static io.vavr.control.Validation.valid;
 import static ratpack.exec.Promise.async;
 
 public class RatpackMongoClient {
+
+    public abstract static class Error {
+    }
+
+    @Value
+    public static class ExactlyOneElementExpected extends Error {
+    }
+
+    @Value
+    public static class MongoException extends Error {
+        Throwable throwable;
+    }
 
     public static Promise<Void> insertOne(MongoCollection<Document> collection, Document document) {
         return async(downstream -> collection.insertOne(document, (result, throwable) -> {
@@ -21,15 +38,15 @@ public class RatpackMongoClient {
         }));
     }
 
-    public static Promise<Document> findOne(MongoCollection<Document> collection, Bson filter) {
+    public static Promise<Validation<Error, Document>> findOne(MongoCollection<Document> collection, Bson filter) {
         return async(downstream -> collection.find(filter).into(new ArrayList<>(), (result, throwable) -> {
             if (throwable != null) {
-                downstream.error(throwable);
+                downstream.success(invalid(new MongoException(throwable)));
             } else {
                 if (result.size() != 1) {
-                    downstream.error(new RuntimeException("Exactly one element expected!"));
+                    downstream.success(invalid(new ExactlyOneElementExpected()));
                 } else {
-                    downstream.success(result.get(0));
+                    downstream.success(valid(result.get(0)));
                 }
             }
         }));
