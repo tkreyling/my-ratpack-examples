@@ -46,11 +46,8 @@ public class PollRepository {
         Validation<FindOneError, ObjectId> mongoObjectId = createMongoObjectId(pollId);
 
         return ValidationUtil.flatMapPromise(mongoObjectId, objectId ->
-                RatpackMongoClient.findOne(collection, Filters.eq("_id", objectId))
-                        .map(validation -> validation
-                                .map(this::mapBsonDocumentToDomainObject)
-                        ));
-
+                RatpackMongoClient.findOne(collection, Filters.eq("_id", objectId)))
+                .map(validation -> validation.map(this::mapBsonDocumentToDomainObject));
     }
 
     private Validation<FindOneError, ObjectId> createMongoObjectId(String hexIdString) {
