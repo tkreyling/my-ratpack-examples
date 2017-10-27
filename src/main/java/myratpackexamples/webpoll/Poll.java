@@ -6,7 +6,7 @@ import java.util.List;
 
 @Value
 public class Poll {
-    String id;
+    public String id;
     String topic;
     List<String> options;
 }
