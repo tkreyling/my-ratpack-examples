@@ -9,6 +9,8 @@ import io.vavr.control.Validation;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import myratpackexamples.promises.ValidationUtil;
+import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError;
+import ratpack.exec.Promise;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
 
@@ -26,14 +28,18 @@ public class CreatePollHandler implements Handler {
         context.parse(fromJson(PollRequest.class)).then(pollRequest ->
                 ValidationUtil.flatMapPromise(
                         mapRequestToDomainObject(pollRequest),
-                        poll -> pollRepository.storePoll(poll)
-                                .map(validation -> validation.mapError(result -> List.of(result.toString())))
+                        this::storePoll
                 ).then(validation -> validation
                         .toEither()
                         .peek(poll -> createSuccessResponse(context, poll))
                         .peekLeft(errors -> createErrorResponse(context))
                 )
         );
+    }
+
+    private Promise<Validation<Seq<Error>, Poll>> storePoll(PollRequest poll) {
+        return pollRepository.storePoll(poll)
+                .map(validation -> validation.mapError(error -> List.of(new TechnicalError(error))));
     }
 
     private static void createSuccessResponse(Context context, Poll poll) {
@@ -47,15 +53,26 @@ public class CreatePollHandler implements Handler {
         context.getResponse().send("");
     }
 
-    private static Validation<Seq<String>, PollRequest> mapRequestToDomainObject(PollRequest pollRequest) {
+    private static Validation<Seq<Error>, PollRequest> mapRequestToDomainObject(PollRequest pollRequest) {
         return Validation.combine(
                 createTopic(pollRequest.getTopic()),
                 valid(pollRequest.getOptions())
         ).ap(PollRequest::new);
     }
 
-    private static Validation<String, String> createTopic(String topic) {
-        if (topic == null || topic.equals("")) return invalid("Topic must be non empty!");
+    private static Validation<Error, String> createTopic(String topic) {
+        if (topic == null || topic.equals("")) return invalid(new TopicMustBeNonEmpty());
         return valid(topic);
+    }
+
+    private abstract static class Error {
+    }
+
+    @Value
+    private static class TechnicalError extends Error {
+        InsertOneError insertOneError;
+    }
+
+    private static class TopicMustBeNonEmpty extends Error {
     }
 }
