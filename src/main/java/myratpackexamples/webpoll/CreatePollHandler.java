@@ -32,7 +32,7 @@ public class CreatePollHandler implements Handler {
                 ).then(validation -> validation
                         .toEither()
                         .peek(poll -> createSuccessResponse(context, poll))
-                        .peekLeft(errors -> createErrorResponse(context))
+                        .peekLeft(errors -> createErrorResponse(context, errors))
                 )
         );
     }
@@ -48,8 +48,12 @@ public class CreatePollHandler implements Handler {
         context.getResponse().send("");
     }
 
-    private static void createErrorResponse(Context context) {
-        context.getResponse().status(HttpResponseStatus.BAD_REQUEST.code());
+    private static void createErrorResponse(Context context, Seq<Error> errors) {
+        errors.filter(error -> error instanceof TechnicalError)
+                .forEach(error -> context.getResponse().status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()));
+        errors.filter(error -> error instanceof TopicMustBeNonEmpty)
+                .forEach(error -> context.getResponse().status(HttpResponseStatus.BAD_REQUEST.code()));
+
         context.getResponse().send("");
     }
 
