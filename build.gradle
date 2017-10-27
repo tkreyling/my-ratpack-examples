@@ -26,6 +26,7 @@ compileTestJava {
 
 dependencies {
     compileOnly "org.projectlombok:lombok:1.16.12"
+    testCompileOnly "org.projectlombok:lombok:1.16.12"
 
     compile ratpack.dependency("guice")
 
