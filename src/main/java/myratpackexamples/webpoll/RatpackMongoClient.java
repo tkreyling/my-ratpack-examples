@@ -26,6 +26,11 @@ public class RatpackMongoClient {
         Throwable throwable;
     }
 
+    @Value
+    public static class InsertOneJsonProcessingError extends InsertOneError {
+        Throwable throwable;
+    }
+
     public static Promise<Validation<InsertOneError, Void>> insertOne(
             MongoCollection<Document> collection, Document document
     ) {

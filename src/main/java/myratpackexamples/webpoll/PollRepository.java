@@ -9,12 +9,15 @@ import com.mongodb.async.client.MongoDatabase;
 import io.vavr.control.Validation;
 import myratpackexamples.webpoll.RatpackMongoClient.FindOneError;
 import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError;
+import myratpackexamples.webpoll.RatpackMongoClient.InsertOneJsonProcessingError;
 import org.bson.Document;
 import ratpack.exec.Promise;
 
 import java.util.List;
 
+import static io.vavr.control.Validation.invalid;
 import static ratpack.exec.Promise.error;
+import static ratpack.exec.Promise.value;
 
 public class PollRepository {
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -33,7 +36,7 @@ public class PollRepository {
                     );
 
         } catch (JsonProcessingException e) {
-            return error(e);
+            return value(invalid(new InsertOneJsonProcessingError(e)));
         }
     }
 
