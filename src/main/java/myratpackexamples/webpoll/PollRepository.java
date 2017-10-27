@@ -8,6 +8,7 @@ import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
 import io.vavr.control.Validation;
 import myratpackexamples.webpoll.RatpackMongoClient.FindOneError;
+import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError;
 import org.bson.Document;
 import ratpack.exec.Promise;
 
@@ -18,7 +19,7 @@ import static ratpack.exec.Promise.error;
 public class PollRepository {
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public Promise<Poll> storePoll(PollRequest pollRequest) {
+    public Promise<Validation<InsertOneError, Poll>> storePoll(PollRequest pollRequest) {
         try {
             MongoCollection<Document> collection = getPollsCollection();
 
@@ -26,8 +27,10 @@ public class PollRepository {
             Document pollBsonDocument = Document.parse(pollJson);
 
             return RatpackMongoClient.insertOne(collection, pollBsonDocument)
-                    .map((ignored) -> pollBsonDocument)
-                    .map(this::mapBsonDocumentToDomainObject);
+                    .map(validation -> validation
+                            .map((ignored) -> pollBsonDocument)
+                            .map(this::mapBsonDocumentToDomainObject)
+                    );
 
         } catch (JsonProcessingException e) {
             return error(e);

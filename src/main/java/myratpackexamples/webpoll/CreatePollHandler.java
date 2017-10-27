@@ -3,10 +3,12 @@ package myratpackexamples.webpoll;
 import com.google.inject.Inject;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
 import lombok.AllArgsConstructor;
 import lombok.Value;
+import myratpackexamples.promises.ValidationUtil;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
 
@@ -22,14 +24,15 @@ public class CreatePollHandler implements Handler {
     @Override
     public void handle(Context context) throws Exception {
         context.parse(fromJson(PollRequest.class)).then(pollRequest ->
-                mapRequestToDomainObject(pollRequest)
-                        .map(pollRepository::storePoll)
+                ValidationUtil.flatMapPromise(
+                        mapRequestToDomainObject(pollRequest),
+                        poll -> pollRepository.storePoll(poll)
+                                .map(validation -> validation.mapError(result -> List.of(result.toString())))
+                ).then(validation -> validation
                         .toEither()
-                        .peek(pollPromise -> pollPromise
-                                .onError(throwable -> createErrorResponse(context))
-                                .then(poll -> createSuccessResponse(context, poll))
-                        )
+                        .peek(poll -> createSuccessResponse(context, poll))
                         .peekLeft(errors -> createErrorResponse(context))
+                )
         );
     }
 

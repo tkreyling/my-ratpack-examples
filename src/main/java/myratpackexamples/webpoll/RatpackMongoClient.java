@@ -18,12 +18,22 @@ import static ratpack.exec.Promise.async;
 
 public class RatpackMongoClient {
 
-    public static Promise<Void> insertOne(MongoCollection<Document> collection, Document document) {
+    public abstract static class InsertOneError {
+    }
+
+    @Value
+    public static class InsertOneMongoError extends InsertOneError {
+        Throwable throwable;
+    }
+
+    public static Promise<Validation<InsertOneError, Void>> insertOne(
+            MongoCollection<Document> collection, Document document
+    ) {
         return async(downstream -> collection.insertOne(document, (result, throwable) -> {
             if (throwable != null) {
-                downstream.error(throwable);
+                downstream.success(invalid(new InsertOneMongoError(throwable)));
             } else {
-                downstream.success(result);
+                downstream.success(valid(result));
             }
         }));
     }
@@ -42,7 +52,7 @@ public class RatpackMongoClient {
     }
 
     @Value
-    public static class MongoError extends FindOneError {
+    public static class FindOneMongoError extends FindOneError {
         Throwable throwable;
     }
 
@@ -67,7 +77,7 @@ public class RatpackMongoClient {
     private static Promise<Validation<FindOneError, Document>> findOne(MongoCollection<Document> collection, Bson filter) {
         return async(downstream -> collection.find(filter).into(new ArrayList<>(), (result, throwable) -> {
             if (throwable != null) {
-                downstream.success(invalid(new MongoError(throwable)));
+                downstream.success(invalid(new FindOneMongoError(throwable)));
             } else {
                 if (result.size() != 1) {
                     downstream.success(invalid(new ExactlyOneElementExpected()));
