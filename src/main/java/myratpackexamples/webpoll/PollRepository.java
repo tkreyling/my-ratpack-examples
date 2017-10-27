@@ -9,6 +9,8 @@ import com.mongodb.async.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import io.vavr.control.Validation;
 import myratpackexamples.promises.ValidationUtil;
+import myratpackexamples.webpoll.RatpackMongoClient.FindOneError;
+import myratpackexamples.webpoll.RatpackMongoClient.InvalidIdString;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import ratpack.exec.Promise;
@@ -38,26 +40,25 @@ public class PollRepository {
         }
     }
 
-    public Promise<Validation<String, Poll>> retrievePoll(String pollId) {
+    public Promise<Validation<FindOneError, Poll>> retrievePoll(String pollId) {
         MongoCollection<Document> collection = getPollsCollection();
 
-        Validation<String, ObjectId> mongoObjectId = createMongoObjectId(pollId);
+        Validation<FindOneError, ObjectId> mongoObjectId = createMongoObjectId(pollId);
 
         return ValidationUtil.flatMapPromise(mongoObjectId, objectId ->
                 RatpackMongoClient.findOne(collection, Filters.eq("_id", objectId))
                         .map(validation -> validation
-                                .mapError(Object::toString)
                                 .map(this::mapBsonDocumentToDomainObject)
                         ));
 
     }
 
-    private Validation<String, ObjectId> createMongoObjectId(String hexIdString) {
+    private Validation<FindOneError, ObjectId> createMongoObjectId(String hexIdString) {
         try {
             return valid(new ObjectId(hexIdString));
 
         } catch (IllegalArgumentException e) {
-            return invalid("Non valid id!");
+            return invalid(new InvalidIdString(hexIdString));
         }
     }
 

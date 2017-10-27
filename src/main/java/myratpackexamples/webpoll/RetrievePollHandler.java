@@ -5,6 +5,9 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.AllArgsConstructor;
 import lombok.Value;
+import myratpackexamples.webpoll.RatpackMongoClient.ExactlyOneElementExpected;
+import myratpackexamples.webpoll.RatpackMongoClient.FindOneError;
+import myratpackexamples.webpoll.RatpackMongoClient.InvalidIdString;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
 import ratpack.jackson.Jackson;
@@ -32,10 +35,10 @@ public class RetrievePollHandler implements Handler {
         context.render(Jackson.json(poll));
     }
 
-    private static void createFailureResponse(Context context, String error) {
-        if (error.equals("RatpackMongoClient.ExactlyOneElementExpected()")) {
+    private static void createFailureResponse(Context context, FindOneError error) {
+        if (error instanceof ExactlyOneElementExpected) {
             context.getResponse().status(HttpResponseStatus.NOT_FOUND.code());
-        } else if (error.equals("Non valid id!")) {
+        } else if (error instanceof InvalidIdString) {
             context.getResponse().status(HttpResponseStatus.BAD_REQUEST.code());
         } else {
             context.getResponse().status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());

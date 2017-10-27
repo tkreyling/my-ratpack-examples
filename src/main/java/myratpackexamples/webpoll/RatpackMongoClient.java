@@ -32,6 +32,12 @@ public class RatpackMongoClient {
     public static class ExactlyOneElementExpected extends FindOneError {
     }
 
+
+    @Value
+    public static class InvalidIdString extends FindOneError {
+        String idString;
+    }
+
     @Value
     public static class MongoError extends FindOneError {
         Throwable throwable;
