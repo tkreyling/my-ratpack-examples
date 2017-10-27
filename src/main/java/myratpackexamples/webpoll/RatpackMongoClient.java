@@ -1,10 +1,13 @@
 package myratpackexamples.webpoll;
 
 import com.mongodb.async.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import io.vavr.control.Validation;
 import lombok.Value;
+import myratpackexamples.promises.ValidationUtil;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import ratpack.exec.Promise;
 
 import java.util.ArrayList;
@@ -43,7 +46,25 @@ public class RatpackMongoClient {
         Throwable throwable;
     }
 
-    public static Promise<Validation<FindOneError, Document>> findOne(MongoCollection<Document> collection, Bson filter) {
+    public static Promise<Validation<FindOneError, Document>> findOneById(
+            MongoCollection<Document> collection, String hexIdString
+    ) {
+        Validation<FindOneError, ObjectId> mongoObjectId = createMongoObjectId(hexIdString);
+
+        return ValidationUtil.flatMapPromise(mongoObjectId, objectId ->
+                findOne(collection, Filters.eq("_id", objectId)));
+    }
+
+    private static Validation<FindOneError, ObjectId> createMongoObjectId(String hexIdString) {
+        try {
+            return valid(new ObjectId(hexIdString));
+
+        } catch (IllegalArgumentException e) {
+            return invalid(new InvalidIdString(hexIdString));
+        }
+    }
+
+    private static Promise<Validation<FindOneError, Document>> findOne(MongoCollection<Document> collection, Bson filter) {
         return async(downstream -> collection.find(filter).into(new ArrayList<>(), (result, throwable) -> {
             if (throwable != null) {
                 downstream.success(invalid(new MongoError(throwable)));
