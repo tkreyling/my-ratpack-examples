@@ -53,16 +53,14 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
         context.response.send("")
     }
 
-    private fun mapRequestToDomainObject(pollRequest: PollRequest): Validation<Seq<Error>, PollRequest> {
-        return Validation.combine(
-                createTopic(pollRequest.topic),
-                valid(pollRequest.options)
-        ).ap(::PollRequest)
-    }
+    private fun mapRequestToDomainObject(pollRequest: PollRequest): Validation<Seq<Error>, PollRequest> =
+            Validation.combine(
+                    createTopic(pollRequest.topic),
+                    valid(pollRequest.options)
+            ).ap(::PollRequest)
 
-    private fun createTopic(topic: String?): Validation<Error, String> {
-        return if (topic == null || topic == "") invalid(TopicMustBeNonEmpty) else valid(topic)
-    }
+    private fun createTopic(topic: String?): Validation<Error, String> =
+            if (topic == null || topic == "") invalid(TopicMustBeNonEmpty) else valid(topic)
 
     sealed class Error {
         data class TechnicalError( val insertOneError: InsertOneError) : Error()
