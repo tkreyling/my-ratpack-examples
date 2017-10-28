@@ -3,7 +3,6 @@ package myratpackexamples.webpoll
 import com.google.inject.Inject
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
-import io.vavr.Function2
 import io.vavr.collection.List
 import io.vavr.collection.Seq
 import io.vavr.control.Validation
@@ -60,9 +59,7 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
         return Validation.combine(
                 createTopic(pollRequest.topic),
                 valid(pollRequest.options)
-        ).ap(object: Function2<String, MutableList<String>?, PollRequest> {
-            override fun apply(topic: String?, options: MutableList<String>?) = PollRequest(topic, options)
-        })
+        ).ap { topic: String?, options: MutableList<String>? -> PollRequest(topic, options) }
     }
 
     private fun createTopic(topic: String?): Validation<Error, String> {
