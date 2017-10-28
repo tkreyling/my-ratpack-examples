@@ -16,8 +16,6 @@ import ratpack.exec.Promise
 import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.jackson.Jackson.fromJson
-import kotlin.collections.MutableList
-import kotlin.collections.forEach
 
 class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) : Handler {
 
@@ -59,7 +57,7 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
         return Validation.combine(
                 createTopic(pollRequest.topic),
                 valid(pollRequest.options)
-        ).ap { topic: String?, options: MutableList<String>? -> PollRequest(topic, options) }
+        ).ap(::PollRequest)
     }
 
     private fun createTopic(topic: String?): Validation<Error, String> {
