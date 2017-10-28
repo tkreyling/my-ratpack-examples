@@ -16,20 +16,20 @@ import ratpack.exec.Promise
 import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.jackson.Jackson.fromJson
+import java.util.function.Function
 
 class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) : Handler {
 
     override fun handle(context: Context) {
         context.parse(fromJson(PollRequest::class.java)).then { pollRequest ->
-            ValidationUtil.flatMapPromise(
-                    mapRequestToDomainObject(pollRequest),
-                    this::storePoll
-            ).then { validation ->
-                validation
-                        .toEither()
-                        .peek { poll -> createSuccessResponse(context, poll) }
-                        .peekLeft { errors -> createErrorResponse(context, errors) }
-            }
+            mapRequestToDomainObject(pollRequest)
+                    .flatMapPromise(this::storePoll)
+                    .then { validation ->
+                        validation
+                                .toEither()
+                                .peek { poll -> createSuccessResponse(context, poll) }
+                                .peekLeft { errors -> createErrorResponse(context, errors) }
+                    }
         }
     }
 
@@ -69,3 +69,8 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
         object TopicMustBeNonEmpty : Error()
     }
 }
+
+fun <E, I, O> Validation<E, I>.flatMapPromise(function: (I) -> Promise<Validation<E, O>>): Promise<Validation<E, O>> =
+        ValidationUtil.flatMapPromise(this, object : Function<I, Promise<Validation<E, O>>> {
+            override fun apply(i: I): Promise<Validation<E, O>> = function.invoke(i)
+        })
