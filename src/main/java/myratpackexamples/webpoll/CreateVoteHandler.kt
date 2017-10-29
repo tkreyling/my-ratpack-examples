@@ -1,13 +1,15 @@
 package myratpackexamples.webpoll
 
 import com.google.inject.Inject
-import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vavr.collection.Seq
+import io.vavr.collection.List
 import io.vavr.control.Validation
 import io.vavr.control.Validation.invalid
 import io.vavr.control.Validation.valid
 import myratpackexamples.webpoll.Error.VoterMustBeNonEmpty
+import myratpackexamples.webpoll.Error.TechnicalError
+import ratpack.exec.Promise
 import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.jackson.Jackson
@@ -16,16 +18,25 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
 
     override fun handle(context: Context) {
         val pollId = context.pathTokens["poll"]
-        pollRepository.retrievePoll(pollId)
+        val poll = retrievePoll(pollId)
 
-        context.parse(Jackson.fromJson(VoteRequest::class.java)).then { voteRequest ->
-            validateRequest(voteRequest).toEither()
+        val voteRequest = context.parse(Jackson.fromJson(VoteRequest::class.java))
+
+        poll.right(voteRequest).then { pair ->
+            pair.left.flatMap { validateRequest(pair.right, it) }
+                    .toEither()
                     .peek(context::createSuccessResponse)
                     .peekLeft(context::createErrorResponse)
+
         }
     }
 
-    private fun validateRequest(voteRequest: VoteRequest): Validation<Seq<Error>, VoteRequestValidated> =
+    private fun retrievePoll(pollId: String?): Promise<Validation<Seq<Error>, Poll>> {
+        return pollRepository.retrievePoll(pollId)
+                .map { validation -> validation.mapError<Seq<Error>> { error -> List.of(TechnicalError(error)) } }
+    }
+
+    private fun validateRequest(voteRequest: VoteRequest, poll: Poll): Validation<Seq<Error>, VoteRequestValidated> =
             Validation.combine(
                     validateVoter(voteRequest.voter),
                     validateSelections(voteRequest.selections)
@@ -34,7 +45,8 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
     private fun validateVoter(topic: String?): Validation<Error, String> =
             if (topic == null || topic == "") invalid(VoterMustBeNonEmpty) else valid(topic)
 
-    private fun validateSelections(selections: List<Selection>?): Validation<Error, List<SelectionValidated>> =
+    private fun validateSelections(selections: kotlin.collections.List<Selection>?):
+            Validation<Error, kotlin.collections.List<SelectionValidated>> =
             valid(
                     (selections ?: emptyList())
                     .map { SelectionValidated(
@@ -45,6 +57,7 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
 }
 
 sealed class Error {
+    data class TechnicalError(val findOneError: FindOneError) : Error()
     object VoterMustBeNonEmpty : Error()
 }
 
@@ -54,6 +67,13 @@ private fun Context.createSuccessResponse(voteRequestValidated: VoteRequestValid
 }
 
 private fun Context.createErrorResponse(errors: Seq<Error>) {
-    response.status(HttpResponseStatus.BAD_REQUEST.code())
+    errors.filter { error -> error is TechnicalError }
+            .forEach { _ -> response.status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()) }
+    errors.filter { error -> error is TechnicalError && error.findOneError is FindOneError.InvalidIdString }
+            .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
+    errors.filter { error -> error is TechnicalError && error.findOneError is FindOneError.ExactlyOneElementExpected }
+            .forEach { _ -> response.status(HttpResponseStatus.NOT_FOUND.code()) }
+    errors.filter { error -> error is VoterMustBeNonEmpty }
+            .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
     response.send("")
 }
