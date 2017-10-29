@@ -42,14 +42,10 @@ object RatpackMongoClient {
         data class FindOneMongoError(val throwable: Throwable?): FindOneError()
     }
 
-    fun findOneById(
-            collection: MongoCollection<Document>, hexIdString: String?
-    ): Promise<Validation<FindOneError, Document>> {
+    fun MongoCollection<Document>.findOneById(hexIdString: String?): Promise<Validation<FindOneError, Document>> {
         val mongoObjectId = createMongoObjectId(hexIdString)
 
-        return ValidationUtil.flatMapPromise(mongoObjectId) { objectId ->
-            findOne(collection, Filters.eq("_id", objectId))
-        }
+        return ValidationUtil.flatMapPromise(mongoObjectId) { findOne(Filters.eq("_id", it)) }
     }
 
     private fun createMongoObjectId(hexIdString: String?): Validation<FindOneError, ObjectId> {
@@ -62,9 +58,9 @@ object RatpackMongoClient {
 
     }
 
-    private fun findOne(collection: MongoCollection<Document>, filter: Bson): Promise<Validation<FindOneError, Document>> {
+    private fun MongoCollection<Document>.findOne(filter: Bson): Promise<Validation<FindOneError, Document>> {
         return async { downstream ->
-            collection.find(filter).into(ArrayList()) { result, throwable ->
+            find(filter).into(ArrayList()) { result, throwable ->
                 if (throwable != null) {
                     downstream.success(invalid(FindOneMongoError(throwable)))
                 } else {

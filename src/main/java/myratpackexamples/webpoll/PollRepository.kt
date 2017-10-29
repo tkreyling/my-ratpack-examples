@@ -7,6 +7,7 @@ import com.mongodb.async.client.MongoClients
 import com.mongodb.async.client.MongoCollection
 import io.vavr.control.Validation
 import myratpackexamples.webpoll.RatpackMongoClient.insertOne
+import myratpackexamples.webpoll.RatpackMongoClient.findOneById
 import myratpackexamples.webpoll.RatpackMongoClient.FindOneError
 import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError
 import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError.InsertOneJsonProcessingError
@@ -40,7 +41,7 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
     }
 
     fun retrievePoll(pollId: String?): Promise<Validation<FindOneError, Poll>> {
-        return RatpackMongoClient.findOneById(pollsCollection, pollId)
+        return pollsCollection.findOneById(pollId)
                 .map { it.map(this::mapBsonDocumentToDomainObject) }
     }
 
