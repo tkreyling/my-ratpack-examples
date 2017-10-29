@@ -18,7 +18,7 @@ class ValidationsTest {
     data class Person(val name: String?, val age: Int?)
 
     @Test
-    fun if_there_is_no_validation_failure_in_the_chain_there_is_no_error() {
+    fun `if there is no validation failure in the chain there is no error`() {
         val person = Validation.combine(
                 Validation.valid("Horst"),
                 Validation.valid<String, Int>(30)
@@ -31,7 +31,7 @@ class ValidationsTest {
     }
 
     @Test
-    fun if_there_are_validation_failures_in_the_first_stage_further_processing_is_ignored() {
+    fun `if there are validation failures in the first stage further processing is ignored`() {
         val person = Validation.combine(
                 Validation.invalid<String, String>("Name failed"),
                 Validation.invalid<String, Int>("Age failed")
@@ -46,7 +46,7 @@ class ValidationsTest {
     }
 
     @Test
-    fun if_no_failure_in_first_stage_and_failure_in_second_stage_error_ist() {
+    fun `if no failure in first stage and failure in second stage error is failure from second stage`() {
         val person = Validation.combine(
                 Validation.valid("Horst"),
                 Validation.valid<String, Int>(30)
