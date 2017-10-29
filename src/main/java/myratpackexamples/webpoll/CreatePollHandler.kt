@@ -8,14 +8,13 @@ import io.vavr.collection.Seq
 import io.vavr.control.Validation
 import io.vavr.control.Validation.invalid
 import io.vavr.control.Validation.valid
-import myratpackexamples.promises.ValidationUtil
 import myratpackexamples.webpoll.CreatePollHandler.Error.TechnicalError
 import myratpackexamples.webpoll.CreatePollHandler.Error.TopicMustBeNonEmpty
+import myratpackexamples.promises.flatMapPromise
 import ratpack.exec.Promise
 import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.jackson.Jackson.fromJson
-import java.util.function.Function
 
 class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) : Handler {
 
@@ -46,7 +45,7 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
             if (topic == null || topic == "") invalid(TopicMustBeNonEmpty) else valid(topic)
 
     sealed class Error {
-        data class TechnicalError( val insertOneError: InsertOneError) : Error()
+        data class TechnicalError(val insertOneError: InsertOneError) : Error()
         object TopicMustBeNonEmpty : Error()
     }
 }
@@ -67,4 +66,4 @@ private fun Context.createErrorResponse(errors: Seq<CreatePollHandler.Error>) {
 }
 
 fun <E, I, O> Validation<E, I>.flatMapPromise(function: (I) -> Promise<Validation<E, O>>): Promise<Validation<E, O>> =
-        ValidationUtil.flatMapPromise(this, function)
+        flatMapPromise(this, function)

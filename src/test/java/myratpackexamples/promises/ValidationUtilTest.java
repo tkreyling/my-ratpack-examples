@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
+import static myratpackexamples.promises.ValidationUtilKt.flatMapPromise;
 import static myratpackexamples.promises.ValidationUtilTest.MyErrorCodes.PROMISE_FAILED;
 import static myratpackexamples.promises.ValidationUtilTest.MyErrorCodes.VALIDATION_FAILED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,7 +29,7 @@ public class ValidationUtilTest {
                 .yieldSingle(e -> {
                     Validation<MyErrorCodes, String> validation = valid("value");
 
-                    return ValidationUtil.INSTANCE.flatMapPromise(validation, string -> value(valid(string.length())));
+                    return flatMapPromise(validation, string -> value(valid(string.length())));
                 });
 
         assertEquals(5, (Object) execResult.getValue().get());
@@ -42,7 +43,7 @@ public class ValidationUtilTest {
                 .yieldSingle(e -> {
                     Validation<MyErrorCodes, String> validation = invalid(VALIDATION_FAILED);
 
-                    return ValidationUtil.INSTANCE.flatMapPromise(validation, string -> value(valid(string.length())));
+                    return flatMapPromise(validation, string -> value(valid(string.length())));
                 });
 
         assertEquals(VALIDATION_FAILED, execResult.getValue().getError());
@@ -56,7 +57,7 @@ public class ValidationUtilTest {
                 .yieldSingle(e -> {
                     Validation<MyErrorCodes, String> validation = valid("value");
 
-                    return ValidationUtil.INSTANCE.flatMapPromise(validation, string -> value(invalid(PROMISE_FAILED)));
+                    return flatMapPromise(validation, string -> value(invalid(PROMISE_FAILED)));
                 });
 
         assertEquals(PROMISE_FAILED, execResult.getValue().getError());

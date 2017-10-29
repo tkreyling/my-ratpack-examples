@@ -3,19 +3,17 @@ package myratpackexamples.webpoll
 import com.mongodb.async.client.MongoCollection
 import com.mongodb.client.model.Filters
 import io.vavr.control.Validation
-import myratpackexamples.promises.ValidationUtil
+import io.vavr.control.Validation.invalid
+import io.vavr.control.Validation.valid
+import myratpackexamples.promises.flatMapPromise
+import myratpackexamples.webpoll.FindOneError.*
+import myratpackexamples.webpoll.InsertOneError.InsertOneMongoError
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.bson.types.ObjectId
 import ratpack.exec.Promise
-import myratpackexamples.webpoll.FindOneError.*
-import myratpackexamples.webpoll.InsertOneError.*
-
-import java.util.ArrayList
-
-import io.vavr.control.Validation.invalid
-import io.vavr.control.Validation.valid
 import ratpack.exec.Promise.async
+import java.util.*
 
 sealed class InsertOneError {
     data class InsertOneMongoError(val throwable: Throwable?) : InsertOneError()
@@ -43,7 +41,7 @@ sealed class FindOneError {
 fun MongoCollection<Document>.findOneById(hexIdString: String?): Promise<Validation<FindOneError, Document>> {
     val mongoObjectId = createMongoObjectId(hexIdString)
 
-    return ValidationUtil.flatMapPromise(mongoObjectId) { findOne(Filters.eq("_id", it)) }
+    return flatMapPromise(mongoObjectId) { findOne(Filters.eq("_id", it)) }
 }
 
 private fun createMongoObjectId(hexIdString: String?): Validation<FindOneError, ObjectId> {
