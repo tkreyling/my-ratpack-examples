@@ -8,6 +8,7 @@ import ratpack.server.RatpackServerSpec
 private fun addHandlersToChain(chain: Chain): Chain = chain
         .post("poll", CreatePollHandler::class.java)
         .get("poll/:poll", RetrievePollHandler::class.java)
+        .post("poll/:poll/vote", CreateVoteHandler::class.java)
 
 fun setupServer(server: RatpackServerSpec): RatpackServerSpec = server
         .registry(Guice.registry { it.module(PollModule::class.java) })
