@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
 
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
-import static myratpackexamples.promises.ValidationUtilKt.flatMapPromise;
+import static myratpackexamples.webpoll.ValidationExtensionsKt.flatMapPromise;
 import static myratpackexamples.promises.ValidationUtilTest.MyErrorCodes.PROMISE_FAILED;
 import static myratpackexamples.promises.ValidationUtilTest.MyErrorCodes.VALIDATION_FAILED;
 import static org.junit.jupiter.api.Assertions.assertEquals;

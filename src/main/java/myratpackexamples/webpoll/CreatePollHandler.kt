@@ -10,7 +10,6 @@ import io.vavr.control.Validation.invalid
 import io.vavr.control.Validation.valid
 import myratpackexamples.webpoll.CreatePollHandler.Error.TechnicalError
 import myratpackexamples.webpoll.CreatePollHandler.Error.TopicMustBeNonEmpty
-import myratpackexamples.promises.flatMapPromise
 import ratpack.exec.Promise
 import ratpack.handling.Context
 import ratpack.handling.Handler

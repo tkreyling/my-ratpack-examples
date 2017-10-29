@@ -5,7 +5,6 @@ import com.mongodb.client.model.Filters
 import io.vavr.control.Validation
 import io.vavr.control.Validation.invalid
 import io.vavr.control.Validation.valid
-import myratpackexamples.promises.flatMapPromise
 import myratpackexamples.webpoll.FindOneError.*
 import myratpackexamples.webpoll.InsertOneError.InsertOneMongoError
 import org.bson.Document
