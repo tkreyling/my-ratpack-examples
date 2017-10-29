@@ -6,6 +6,7 @@ import com.google.inject.Inject
 import com.mongodb.async.client.MongoClients
 import com.mongodb.async.client.MongoCollection
 import io.vavr.control.Validation
+import myratpackexamples.webpoll.RatpackMongoClient.insertOne
 import myratpackexamples.webpoll.RatpackMongoClient.FindOneError
 import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError
 import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError.InsertOneJsonProcessingError
@@ -29,7 +30,7 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
             val pollJson = objectMapper.writeValueAsString(pollRequest)
             val pollBsonDocument = Document.parse(pollJson)
 
-            return RatpackMongoClient.insertOne(pollsCollection, pollBsonDocument)
+            return pollsCollection.insertOne(pollBsonDocument)
                     .map { it.map { _ -> pollBsonDocument }.map(this::mapBsonDocumentToDomainObject) }
 
         } catch (e: JsonProcessingException) {

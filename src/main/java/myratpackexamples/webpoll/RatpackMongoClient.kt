@@ -24,11 +24,9 @@ object RatpackMongoClient {
         data class InsertOneJsonProcessingError(val throwable: Throwable?): InsertOneError()
     }
 
-    fun insertOne(
-            collection: MongoCollection<Document>, document: Document
-    ): Promise<Validation<InsertOneError, Void>> {
+    fun MongoCollection<Document>.insertOne(document: Document): Promise<Validation<InsertOneError, Void>> {
         return async { downstream ->
-            collection.insertOne(document) { result, throwable ->
+            insertOne(document) { result, throwable ->
                 if (throwable != null) {
                     downstream.success(invalid(InsertOneMongoError(throwable)))
                 } else {
