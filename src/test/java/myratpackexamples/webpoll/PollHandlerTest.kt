@@ -18,7 +18,7 @@ internal class PollHandlerTest {
     private val objectMapper = ObjectMapper()
 
     @Test
-    fun validPostCreatesPoll() = EmbeddedApp
+    fun `System accepts a valid poll`() = EmbeddedApp
             .of { setupServer(it) }
             .test { httpClient ->
                 val pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}"
@@ -30,7 +30,7 @@ internal class PollHandlerTest {
             }
 
     @Test
-    fun postWithEmptyTopicIsRejected() = EmbeddedApp
+    fun `System rejects an poll with no options`() = EmbeddedApp
             .of { setupServer(it) }
             .test { httpClient ->
                 val pollJson = "{\"topic\":\"\"}"
@@ -41,7 +41,7 @@ internal class PollHandlerTest {
             }
 
     @Test
-    fun systemRetainsValidNewPoll() = EmbeddedApp
+    fun `System retains a valid poll`() = EmbeddedApp
             .of { setupServer(it) }
             .test { httpClient ->
                 val pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}"
@@ -57,7 +57,7 @@ internal class PollHandlerTest {
             }
 
     @Test
-    fun invalidPollId() = EmbeddedApp
+    fun `System responds with bad request for an invalid id`() = EmbeddedApp
             .of { setupServer(it) }
             .test { httpClient ->
                 val response = httpClient.get("poll/999999999")
@@ -66,7 +66,7 @@ internal class PollHandlerTest {
             }
 
     @Test
-    fun unknownPollId() = EmbeddedApp
+    fun `System responds with not found for an not existent poll`() = EmbeddedApp
             .of { setupServer(it) }
             .test { httpClient ->
                 val response = httpClient.get("poll/59ecf1ec9bdc9640f8b4adca")
