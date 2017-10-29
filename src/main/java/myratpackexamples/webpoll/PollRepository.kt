@@ -6,15 +6,10 @@ import com.google.inject.Inject
 import com.mongodb.async.client.MongoClients
 import com.mongodb.async.client.MongoCollection
 import io.vavr.control.Validation
-import myratpackexamples.webpoll.RatpackMongoClient.insertOne
-import myratpackexamples.webpoll.RatpackMongoClient.findOneById
-import myratpackexamples.webpoll.RatpackMongoClient.FindOneError
-import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError
-import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError.InsertOneJsonProcessingError
+import io.vavr.control.Validation.invalid
+import myratpackexamples.webpoll.InsertOneError.InsertOneJsonProcessingError
 import org.bson.Document
 import ratpack.exec.Promise
-
-import io.vavr.control.Validation.invalid
 import ratpack.exec.Promise.value
 
 class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {

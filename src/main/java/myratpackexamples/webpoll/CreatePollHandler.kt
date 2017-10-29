@@ -11,7 +11,6 @@ import io.vavr.control.Validation.valid
 import myratpackexamples.promises.ValidationUtil
 import myratpackexamples.webpoll.CreatePollHandler.Error.TechnicalError
 import myratpackexamples.webpoll.CreatePollHandler.Error.TopicMustBeNonEmpty
-import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError
 import ratpack.exec.Promise
 import ratpack.handling.Context
 import ratpack.handling.Handler

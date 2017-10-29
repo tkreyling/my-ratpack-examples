@@ -3,9 +3,8 @@ package myratpackexamples.webpoll
 import com.google.inject.Inject
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
-import myratpackexamples.webpoll.RatpackMongoClient.FindOneError
-import myratpackexamples.webpoll.RatpackMongoClient.FindOneError.ExactlyOneElementExpected
-import myratpackexamples.webpoll.RatpackMongoClient.FindOneError.InvalidIdString
+import myratpackexamples.webpoll.FindOneError.ExactlyOneElementExpected
+import myratpackexamples.webpoll.FindOneError.InvalidIdString
 import ratpack.handling.Context
 import ratpack.handling.Handler
 import ratpack.jackson.Jackson

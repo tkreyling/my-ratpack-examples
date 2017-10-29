@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.asList;
+import static myratpackexamples.webpoll.RatpackMongoClientKt.insertOne;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -40,7 +41,7 @@ public class MongoTest {
                 assertEquals("Sport to play on Friday", doc.getString("topic"));
                 assertEquals(asList("basketball"), doc.get("options"));
 
-                RatpackMongoClient.INSTANCE.insertOne(collection, doc)
+                insertOne(collection, doc)
                         .result(voidExecResult -> {
                             System.out.println("inserted!");
                             latch.countDown();
