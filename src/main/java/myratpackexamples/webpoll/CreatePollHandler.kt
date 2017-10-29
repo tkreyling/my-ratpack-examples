@@ -19,7 +19,7 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
 
     override fun handle(context: Context) {
         context.parse(fromJson(PollRequest::class.java)).then { pollRequest ->
-            mapRequestToDomainObject(pollRequest)
+            validateRequest(pollRequest)
                     .flatMapPromise(this::storePoll)
                     .then {
                         it.toEither()
@@ -29,18 +29,18 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
         }
     }
 
-    private fun storePoll(poll: PollRequest): Promise<Validation<Seq<Error>, Poll>> {
+    private fun storePoll(poll: PollRequestValidated): Promise<Validation<Seq<Error>, Poll>> {
         return pollRepository.storePoll(poll)
                 .map { validation -> validation.mapError<Seq<Error>> { error -> List.of(TechnicalError(error)) } }
     }
 
-    private fun mapRequestToDomainObject(pollRequest: PollRequest): Validation<Seq<Error>, PollRequest> =
+    private fun validateRequest(pollRequest: PollRequest): Validation<Seq<Error>, PollRequestValidated> =
             Validation.combine(
-                    createTopic(pollRequest.topic),
-                    valid(pollRequest.options)
-            ).ap(::PollRequest)
+                    validateTopic(pollRequest.topic),
+                    valid(pollRequest.options ?: emptyList())
+            ).ap(::PollRequestValidated)
 
-    private fun createTopic(topic: String?): Validation<Error, String> =
+    private fun validateTopic(topic: String?): Validation<Error, String> =
             if (topic == null || topic == "") invalid(TopicMustBeNonEmpty) else valid(topic)
 
     sealed class Error {
