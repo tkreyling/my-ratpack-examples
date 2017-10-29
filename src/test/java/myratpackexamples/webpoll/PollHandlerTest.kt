@@ -23,7 +23,7 @@ internal class PollHandlerTest {
             .test { httpClient ->
                 val pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}"
 
-                val response = post(httpClient, "poll", pollJson)
+                val response = httpClient.post("poll", pollJson)
 
                 assertEquals(HttpResponseStatus.CREATED.code(), response.statusCode)
                 assertTrue(response.headers.contains(HttpHeaderNames.LOCATION))
@@ -35,7 +35,7 @@ internal class PollHandlerTest {
             .test { httpClient ->
                 val pollJson = "{\"topic\":\"\"}"
 
-                val response = post(httpClient, "poll", pollJson)
+                val response = httpClient.post("poll", pollJson)
 
                 assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
             }
@@ -46,11 +46,11 @@ internal class PollHandlerTest {
             .test { httpClient ->
                 val pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}"
 
-                val createResponse = post(httpClient, "poll", pollJson)
+                val createResponse = httpClient.post("poll", pollJson)
 
                 val pollUri = createResponse.headers.get(HttpHeaderNames.LOCATION)
 
-                val poll = get(httpClient, pollUri, Poll::class.java)
+                val poll = httpClient.get(pollUri, Poll::class.java)
 
                 assertEquals("Sport to play on Friday", poll.topic)
                 assertEquals(asList("basketball"), poll.options)
@@ -74,16 +74,15 @@ internal class PollHandlerTest {
                 assertEquals(HttpResponseStatus.NOT_FOUND.code(), response.statusCode)
             }
 
-    private operator fun <T> get(httpClient: TestHttpClient, uri: String, type: Class<T>): T {
-        val response = httpClient.get(uri)
-        val bodyText = response.body.text
-        return objectMapper.readValue(bodyText, type)
-    }
+    private operator fun <T> TestHttpClient.get(uri: String, type: Class<T>): T =
+            objectMapper.readValue(get(uri).body.text, type)
 
-    private fun post(httpClient: TestHttpClient, uri: String, pollJson: String): ReceivedResponse {
-        return httpClient
-                .requestSpec { request -> request.body { body -> body.type("application/json").text(pollJson) } }
-                .post(uri)
+    private fun TestHttpClient.post(uri: String, pollJson: String): ReceivedResponse {
+        return requestSpec {
+            it.body {
+                it.type("application/json").text(pollJson)
+            }
+        }.post(uri)
     }
 
     companion object {
