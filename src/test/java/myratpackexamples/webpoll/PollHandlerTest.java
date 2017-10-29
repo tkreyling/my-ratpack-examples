@@ -36,7 +36,7 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}";
 
         EmbeddedApp
-                .of(PollApplication.INSTANCE::setupServer)
+                .of(PollApplicationKt::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse response = post(httpClient, "poll", pollJson);
 
@@ -50,7 +50,7 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"\"}";
 
         EmbeddedApp
-                .of(PollApplication.INSTANCE::setupServer)
+                .of(PollApplicationKt::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse response = post(httpClient, "poll", pollJson);
                     assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.getStatusCode());
@@ -62,7 +62,7 @@ class PollHandlerTest {
         String pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}";
 
         EmbeddedApp
-                .of(PollApplication.INSTANCE::setupServer)
+                .of(PollApplicationKt::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse createResponse = post(httpClient, "poll", pollJson);
 
@@ -78,7 +78,7 @@ class PollHandlerTest {
     @Test
     void invalidPollId() throws Exception {
         EmbeddedApp
-                .of(PollApplication.INSTANCE::setupServer)
+                .of(PollApplicationKt::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse response = httpClient.get("poll/999999999");
 
@@ -89,7 +89,7 @@ class PollHandlerTest {
     @Test
     void unknownPollId() throws Exception {
         EmbeddedApp
-                .of(PollApplication.INSTANCE::setupServer)
+                .of(PollApplicationKt::setupServer)
                 .test(httpClient -> {
                     ReceivedResponse response = httpClient.get("poll/59ecf1ec9bdc9640f8b4adca");
 
