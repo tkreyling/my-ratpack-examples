@@ -14,28 +14,27 @@ class RetrievePollHandler @Inject constructor(val pollRepository: PollRepository
         val pollId = context.pathTokens["poll"]
 
         pollRepository.retrievePoll(pollId)
-                .then { validation ->
-                    validation
-                            .toEither()
-                            .peek { poll -> createSuccessResponse(context, poll) }
-                            .peekLeft { error -> createFailureResponse(context, error) }
+                .then {
+                    it.toEither()
+                            .peek(context::createSuccessResponse)
+                            .peekLeft(context::createFailureResponse)
                 }
     }
+}
 
-    private fun createSuccessResponse(context: Context, poll: Poll) {
-        context.response.headers.add(HttpHeaderNames.LOCATION, "poll/" + poll.id)
-        context.response.status(HttpResponseStatus.OK.code())
-        context.render(Jackson.json(poll))
-    }
+private fun Context.createSuccessResponse(poll: Poll) {
+    response.headers.add(HttpHeaderNames.LOCATION, "poll/" + poll.id)
+    response.status(HttpResponseStatus.OK.code())
+    render(Jackson.json(poll))
+}
 
-    private fun createFailureResponse(context: Context, error: FindOneError) {
-        if (error is ExactlyOneElementExpected) {
-            context.response.status(HttpResponseStatus.NOT_FOUND.code())
-        } else if (error is InvalidIdString) {
-            context.response.status(HttpResponseStatus.BAD_REQUEST.code())
-        } else {
-            context.response.status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
-        }
-        context.response.send("")
+private fun Context.createFailureResponse(error: FindOneError) {
+    if (error is ExactlyOneElementExpected) {
+        response.status(HttpResponseStatus.NOT_FOUND.code())
+    } else if (error is InvalidIdString) {
+        response.status(HttpResponseStatus.BAD_REQUEST.code())
+    } else {
+        response.status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
     }
+    response.send("")
 }

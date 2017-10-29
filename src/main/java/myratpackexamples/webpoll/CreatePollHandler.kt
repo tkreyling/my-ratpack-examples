@@ -24,11 +24,10 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
         context.parse(fromJson(PollRequest::class.java)).then { pollRequest ->
             mapRequestToDomainObject(pollRequest)
                     .flatMapPromise(this::storePoll)
-                    .then { validation ->
-                        validation
-                                .toEither()
-                                .peek { poll -> createSuccessResponse(context, poll) }
-                                .peekLeft { errors -> createErrorResponse(context, errors) }
+                    .then {
+                        it.toEither()
+                                .peek(context::createSuccessResponse)
+                                .peekLeft(context::createErrorResponse)
                     }
         }
     }
@@ -36,21 +35,6 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
     private fun storePoll(poll: PollRequest): Promise<Validation<Seq<Error>, Poll>> {
         return pollRepository.storePoll(poll)
                 .map { validation -> validation.mapError<Seq<Error>> { error -> List.of(TechnicalError(error)) } }
-    }
-
-    private fun createSuccessResponse(context: Context, poll: Poll) {
-        context.response.headers.add(HttpHeaderNames.LOCATION, "poll/" + poll.id)
-        context.response.status(HttpResponseStatus.CREATED.code())
-        context.response.send("")
-    }
-
-    private fun createErrorResponse(context: Context, errors: Seq<Error>) {
-        errors.filter { error -> error is TechnicalError }
-                .forEach { _ -> context.response.status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()) }
-        errors.filter { error -> error is TopicMustBeNonEmpty }
-                .forEach { _ -> context.response.status(HttpResponseStatus.BAD_REQUEST.code()) }
-
-        context.response.send("")
     }
 
     private fun mapRequestToDomainObject(pollRequest: PollRequest): Validation<Seq<Error>, PollRequest> =
@@ -66,6 +50,21 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
         data class TechnicalError( val insertOneError: InsertOneError) : Error()
         object TopicMustBeNonEmpty : Error()
     }
+}
+
+private fun Context.createSuccessResponse(poll: Poll) {
+    response.headers.add(HttpHeaderNames.LOCATION, "poll/" + poll.id)
+    response.status(HttpResponseStatus.CREATED.code())
+    response.send("")
+}
+
+private fun Context.createErrorResponse(errors: Seq<CreatePollHandler.Error>) {
+    errors.filter { error -> error is TechnicalError }
+            .forEach { _ -> response.status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()) }
+    errors.filter { error -> error is TopicMustBeNonEmpty }
+            .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
+
+    response.send("")
 }
 
 fun <E, I, O> Validation<E, I>.flatMapPromise(function: (I) -> Promise<Validation<E, O>>): Promise<Validation<E, O>> =
