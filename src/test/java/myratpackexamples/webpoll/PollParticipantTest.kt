@@ -38,6 +38,37 @@ internal class PollParticipantTest : TestHttpClientMixin {
     }
 
     @Test
+    fun `System rejects an vote without voter`() {
+        EmbeddedApp.of { setupServer(it) }.test { httpClient ->
+            // Given
+            val pollJson = """
+                {
+                    "topic": "Sport to play on Friday",
+                    "options": ["basketball"]
+                }
+            """
+            val createPollResponse = httpClient.post("poll", pollJson)
+            val pollUri = createPollResponse.headers[LOCATION]
+
+            // When
+            val voteJson = """
+                {
+                    "selections": [
+                        {
+                            "option": "basketball",
+                            "selected": "yes"
+                        }
+                    ]
+                }
+            """
+            val response = httpClient.post(pollUri + "/vote", voteJson)
+
+            // Then
+            Assertions.assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+        }
+    }
+
+    @Test
     fun `System accepts an vote with voter and matching options`() {
         EmbeddedApp.of { setupServer(it) }.test { httpClient ->
             // Given
