@@ -29,6 +29,10 @@ public class RatpackMongoClient {
     @Value
     public static class InsertOneJsonProcessingError extends InsertOneError {
         Throwable throwable;
+
+        public InsertOneJsonProcessingError(Throwable throwable) {
+            this.throwable = throwable;
+        }
     }
 
     public static Promise<Validation<InsertOneError, Void>> insertOne(
