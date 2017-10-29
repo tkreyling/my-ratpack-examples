@@ -40,7 +40,7 @@ public class MongoTest {
                 assertEquals("Sport to play on Friday", doc.getString("topic"));
                 assertEquals(asList("basketball"), doc.get("options"));
 
-                RatpackMongoClient.insertOne(collection, doc)
+                RatpackMongoClient.INSTANCE.insertOne(collection, doc)
                         .result(voidExecResult -> {
                             System.out.println("inserted!");
                             latch.countDown();

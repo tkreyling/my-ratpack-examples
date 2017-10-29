@@ -8,7 +8,7 @@ import com.mongodb.async.client.MongoCollection
 import io.vavr.control.Validation
 import myratpackexamples.webpoll.RatpackMongoClient.FindOneError
 import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError
-import myratpackexamples.webpoll.RatpackMongoClient.InsertOneJsonProcessingError
+import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError.InsertOneJsonProcessingError
 import org.bson.Document
 import ratpack.exec.Promise
 
