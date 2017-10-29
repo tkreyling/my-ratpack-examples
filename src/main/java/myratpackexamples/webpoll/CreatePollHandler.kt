@@ -64,6 +64,3 @@ private fun Context.createErrorResponse(errors: Seq<CreatePollHandler.Error>) {
 
     response.send("")
 }
-
-fun <E, I, O> Validation<E, I>.flatMapPromise(function: (I) -> Promise<Validation<E, O>>): Promise<Validation<E, O>> =
-        flatMapPromise(this, function)

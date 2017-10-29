@@ -38,11 +38,9 @@ sealed class FindOneError {
     data class FindOneMongoError(val throwable: Throwable?) : FindOneError()
 }
 
-fun MongoCollection<Document>.findOneById(hexIdString: String?): Promise<Validation<FindOneError, Document>> {
-    val mongoObjectId = createMongoObjectId(hexIdString)
-
-    return flatMapPromise(mongoObjectId) { findOne(Filters.eq("_id", it)) }
-}
+fun MongoCollection<Document>.findOneById(hexIdString: String?): Promise<Validation<FindOneError, Document>> =
+        createMongoObjectId(hexIdString)
+                .flatMapPromise { findOne(Filters.eq("_id", it)) }
 
 private fun createMongoObjectId(hexIdString: String?): Validation<FindOneError, ObjectId> {
     return try {
