@@ -14,7 +14,7 @@ import java.util.Arrays.asList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 
-internal class PollHandlerTest {
+internal class PollOwnerTest {
     private val objectMapper = ObjectMapper()
 
     @Test
