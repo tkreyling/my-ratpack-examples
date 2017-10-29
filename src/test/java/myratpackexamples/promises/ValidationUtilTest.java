@@ -28,7 +28,7 @@ public class ValidationUtilTest {
                 .yieldSingle(e -> {
                     Validation<MyErrorCodes, String> validation = valid("value");
 
-                    return ValidationUtil.flatMapPromise(validation, string -> value(valid(string.length())));
+                    return ValidationUtil.INSTANCE.flatMapPromise(validation, string -> value(valid(string.length())));
                 });
 
         assertEquals(5, (Object) execResult.getValue().get());
@@ -42,7 +42,7 @@ public class ValidationUtilTest {
                 .yieldSingle(e -> {
                     Validation<MyErrorCodes, String> validation = invalid(VALIDATION_FAILED);
 
-                    return ValidationUtil.flatMapPromise(validation, string -> value(valid(string.length())));
+                    return ValidationUtil.INSTANCE.flatMapPromise(validation, string -> value(valid(string.length())));
                 });
 
         assertEquals(VALIDATION_FAILED, execResult.getValue().getError());
@@ -56,7 +56,7 @@ public class ValidationUtilTest {
                 .yieldSingle(e -> {
                     Validation<MyErrorCodes, String> validation = valid("value");
 
-                    return ValidationUtil.flatMapPromise(validation, string -> value(invalid(PROMISE_FAILED)));
+                    return ValidationUtil.INSTANCE.flatMapPromise(validation, string -> value(invalid(PROMISE_FAILED)));
                 });
 
         assertEquals(PROMISE_FAILED, execResult.getValue().getError());

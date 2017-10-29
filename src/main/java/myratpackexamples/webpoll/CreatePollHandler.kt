@@ -67,6 +67,4 @@ private fun Context.createErrorResponse(errors: Seq<CreatePollHandler.Error>) {
 }
 
 fun <E, I, O> Validation<E, I>.flatMapPromise(function: (I) -> Promise<Validation<E, O>>): Promise<Validation<E, O>> =
-        ValidationUtil.flatMapPromise(this, object : Function<I, Promise<Validation<E, O>>> {
-            override fun apply(i: I): Promise<Validation<E, O>> = function.invoke(i)
-        })
+        ValidationUtil.flatMapPromise(this, function)
