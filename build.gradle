@@ -23,9 +23,6 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.16.12"
-    testCompileOnly "org.projectlombok:lombok:1.16.12"
-
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 
     compile ratpack.dependency("guice")
