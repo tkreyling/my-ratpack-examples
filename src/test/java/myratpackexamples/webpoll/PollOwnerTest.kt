@@ -3,17 +3,14 @@ package myratpackexamples.webpoll
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import ratpack.http.client.ReceivedResponse
-import ratpack.test.embed.EmbeddedApp
-import ratpack.test.http.TestHttpClient
-
-import java.util.Arrays.asList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import ratpack.test.embed.EmbeddedApp
+import java.util.Arrays.asList
 
+@ExtendWith(InMemoryMongoDbJunitExtension::class)
 internal class PollOwnerTest : TestHttpClientMixin {
     override val objectMapper = ObjectMapper()
 
@@ -71,23 +68,6 @@ internal class PollOwnerTest : TestHttpClientMixin {
             val response = httpClient.get("poll/59ecf1ec9bdc9640f8b4adca")
 
             assertEquals(HttpResponseStatus.NOT_FOUND.code(), response.statusCode)
-        }
-    }
-
-    companion object {
-        @JvmStatic
-        private var inMemoryMongoDb: InMemoryMongoDb? = null
-
-        @JvmStatic
-        @BeforeAll
-        fun setUp() {
-            inMemoryMongoDb = InMemoryMongoDb()
-        }
-
-        @JvmStatic
-        @AfterAll
-        fun tearDown() {
-            inMemoryMongoDb!!.close()
         }
     }
 }
