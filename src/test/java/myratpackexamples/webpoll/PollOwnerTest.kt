@@ -27,7 +27,7 @@ internal class PollOwnerTest : TestHttpClientMixin {
     }
 
     @Test
-    fun `System rejects an poll with no options`() {
+    fun `System rejects an poll with no topic`() {
         EmbeddedApp.of { setupServer(it) }.test { httpClient ->
             val pollJson = "{\"topic\":\"\"}"
 
