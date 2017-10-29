@@ -18,61 +18,61 @@ internal class PollHandlerTest {
     private val objectMapper = ObjectMapper()
 
     @Test
-    fun `System accepts a valid poll`() = EmbeddedApp
-            .of { setupServer(it) }
-            .test { httpClient ->
-                val pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}"
+    fun `System accepts a valid poll`() {
+        EmbeddedApp.of { setupServer(it) }.test { httpClient ->
+            val pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}"
 
-                val response = httpClient.post("poll", pollJson)
+            val response = httpClient.post("poll", pollJson)
 
-                assertEquals(HttpResponseStatus.CREATED.code(), response.statusCode)
-                assertTrue(response.headers.contains(HttpHeaderNames.LOCATION))
-            }
-
-    @Test
-    fun `System rejects an poll with no options`() = EmbeddedApp
-            .of { setupServer(it) }
-            .test { httpClient ->
-                val pollJson = "{\"topic\":\"\"}"
-
-                val response = httpClient.post("poll", pollJson)
-
-                assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
-            }
+            assertEquals(HttpResponseStatus.CREATED.code(), response.statusCode)
+            assertTrue(response.headers.contains(HttpHeaderNames.LOCATION))
+        }
+    }
 
     @Test
-    fun `System retains a valid poll`() = EmbeddedApp
-            .of { setupServer(it) }
-            .test { httpClient ->
-                val pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}"
+    fun `System rejects an poll with no options`() {
+        EmbeddedApp.of { setupServer(it) }.test { httpClient ->
+            val pollJson = "{\"topic\":\"\"}"
 
-                val createResponse = httpClient.post("poll", pollJson)
+            val response = httpClient.post("poll", pollJson)
 
-                val pollUri = createResponse.headers.get(HttpHeaderNames.LOCATION)
-
-                val poll = httpClient.get(pollUri, Poll::class.java)
-
-                assertEquals("Sport to play on Friday", poll.topic)
-                assertEquals(asList("basketball"), poll.options)
-            }
+            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+        }
+    }
 
     @Test
-    fun `System responds with bad request for an invalid id`() = EmbeddedApp
-            .of { setupServer(it) }
-            .test { httpClient ->
-                val response = httpClient.get("poll/999999999")
+    fun `System retains a valid poll`() {
+        EmbeddedApp.of { setupServer(it) }.test { httpClient ->
+            val pollJson = "{\"topic\":\"Sport to play on Friday\",\"options\":[\"basketball\"]}"
 
-                assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
-            }
+            val createResponse = httpClient.post("poll", pollJson)
+
+            val pollUri = createResponse.headers.get(HttpHeaderNames.LOCATION)
+
+            val poll = httpClient.get(pollUri, Poll::class.java)
+
+            assertEquals("Sport to play on Friday", poll.topic)
+            assertEquals(asList("basketball"), poll.options)
+        }
+    }
 
     @Test
-    fun `System responds with not found for an not existent poll`() = EmbeddedApp
-            .of { setupServer(it) }
-            .test { httpClient ->
-                val response = httpClient.get("poll/59ecf1ec9bdc9640f8b4adca")
+    fun `System responds with bad request for an invalid id`() {
+        EmbeddedApp.of { setupServer(it) }.test { httpClient ->
+            val response = httpClient.get("poll/999999999")
 
-                assertEquals(HttpResponseStatus.NOT_FOUND.code(), response.statusCode)
-            }
+            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+        }
+    }
+
+    @Test
+    fun `System responds with not found for an not existent poll`() {
+        EmbeddedApp.of { setupServer(it) }.test { httpClient ->
+            val response = httpClient.get("poll/59ecf1ec9bdc9640f8b4adca")
+
+            assertEquals(HttpResponseStatus.NOT_FOUND.code(), response.statusCode)
+        }
+    }
 
     private operator fun <T> TestHttpClient.get(uri: String, type: Class<T>): T =
             objectMapper.readValue(get(uri).body.text, type)
