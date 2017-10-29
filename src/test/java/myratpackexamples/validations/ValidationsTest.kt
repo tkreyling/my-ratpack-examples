@@ -3,15 +3,11 @@ package myratpackexamples.validations
 import io.vavr.collection.List
 import io.vavr.collection.Seq
 import io.vavr.control.Validation
-import org.junit.jupiter.api.Test
-
-import java.util.NoSuchElementException
-
+import myratpackexamples.webpoll.ap
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.function.Executable
-
-import myratpackexamples.webpoll.ap;
+import org.junit.jupiter.api.Test
+import java.util.*
 
 class ValidationsTest {
 
@@ -26,7 +22,7 @@ class ValidationsTest {
 
         val secondStep = person.flatMap { Validation.valid<Seq<String>, Person>(it) }
 
-        assertThrows(NoSuchElementException::class.java, Executable { secondStep.error })
+        assertThrows(NoSuchElementException::class.java) { secondStep.error }
         assertEquals(Person("Horst", 30), secondStep.get())
     }
 
@@ -42,7 +38,7 @@ class ValidationsTest {
         }
 
         assertEquals(List.of("Name failed", "Age failed"), secondStep.error)
-        assertThrows(NoSuchElementException::class.java, Executable { secondStep.get() })
+        assertThrows(NoSuchElementException::class.java) { secondStep.get() }
     }
 
     @Test
@@ -57,6 +53,6 @@ class ValidationsTest {
         }
 
         assertEquals(List.of("Validation in additional step failed!"), secondStep.error)
-        assertThrows(NoSuchElementException::class.java, Executable { secondStep.get() })
+        assertThrows(NoSuchElementException::class.java) { secondStep.get() }
     }
 }
