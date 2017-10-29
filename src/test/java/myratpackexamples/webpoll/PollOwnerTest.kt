@@ -1,7 +1,7 @@
 package myratpackexamples.webpoll
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.netty.handler.codec.http.HttpHeaderNames
+import io.netty.handler.codec.http.HttpHeaderNames.LOCATION
 import io.netty.handler.codec.http.HttpResponseStatus
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -22,7 +22,7 @@ internal class PollOwnerTest : TestHttpClientMixin {
             val response = httpClient.post("poll", pollJson)
 
             assertEquals(HttpResponseStatus.CREATED.code(), response.statusCode)
-            assertTrue(response.headers.contains(HttpHeaderNames.LOCATION))
+            assertTrue(response.headers.contains(LOCATION))
         }
     }
 
@@ -44,7 +44,7 @@ internal class PollOwnerTest : TestHttpClientMixin {
 
             val createResponse = httpClient.post("poll", pollJson)
 
-            val pollUri = createResponse.headers.get(HttpHeaderNames.LOCATION)
+            val pollUri = createResponse.headers[LOCATION]
 
             val poll = httpClient.get(pollUri, Poll::class.java)
 
