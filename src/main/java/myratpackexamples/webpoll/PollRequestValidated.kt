@@ -1,6 +1,6 @@
 package myratpackexamples.webpoll
 
-class PollRequestValidated(
+data class PollRequestValidated(
         val topic: String,
         val options: List<String>
 )
