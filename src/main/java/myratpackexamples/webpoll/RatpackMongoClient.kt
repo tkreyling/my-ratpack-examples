@@ -47,13 +47,11 @@ fun MongoCollection<Document>.findOneById(hexIdString: String?): Promise<Validat
 }
 
 private fun createMongoObjectId(hexIdString: String?): Validation<FindOneError, ObjectId> {
-    try {
-        return valid(ObjectId(hexIdString))
-
+    return try {
+        valid(ObjectId(hexIdString))
     } catch (e: IllegalArgumentException) {
-        return invalid(InvalidIdString(hexIdString))
+        invalid(InvalidIdString(hexIdString))
     }
-
 }
 
 private fun MongoCollection<Document>.findOne(filter: Bson): Promise<Validation<FindOneError, Document>> {
