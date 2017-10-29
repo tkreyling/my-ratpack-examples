@@ -1,4 +1,4 @@
-package myratpackexamples.promises;
+package myratpackexamples.webpoll;
 
 import io.vavr.control.Validation;
 import org.junit.jupiter.api.Test;
@@ -10,8 +10,8 @@ import java.util.NoSuchElementException;
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static myratpackexamples.webpoll.ValidationExtensionsKt.flatMapPromise;
-import static myratpackexamples.promises.ValidationExtensionsTest.MyErrorCodes.PROMISE_FAILED;
-import static myratpackexamples.promises.ValidationExtensionsTest.MyErrorCodes.VALIDATION_FAILED;
+import static myratpackexamples.webpoll.ValidationExtensionsTest.MyErrorCodes.PROMISE_FAILED;
+import static myratpackexamples.webpoll.ValidationExtensionsTest.MyErrorCodes.VALIDATION_FAILED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
