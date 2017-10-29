@@ -2,11 +2,14 @@ package myratpackexamples.webpoll;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClients;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
 import io.vavr.control.Validation;
+import lombok.AllArgsConstructor;
+import lombok.Value;
 import myratpackexamples.webpoll.RatpackMongoClient.FindOneError;
 import myratpackexamples.webpoll.RatpackMongoClient.InsertOneError;
 import myratpackexamples.webpoll.RatpackMongoClient.InsertOneJsonProcessingError;
@@ -19,8 +22,10 @@ import static io.vavr.control.Validation.invalid;
 import static ratpack.exec.Promise.error;
 import static ratpack.exec.Promise.value;
 
+@Value
+@AllArgsConstructor(onConstructor=@__(@Inject))
 public class PollRepository {
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper;
 
     public Promise<Validation<InsertOneError, Poll>> storePoll(PollRequest pollRequest) {
         try {
