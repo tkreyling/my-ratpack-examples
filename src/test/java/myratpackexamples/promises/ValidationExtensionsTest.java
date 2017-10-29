@@ -10,14 +10,14 @@ import java.util.NoSuchElementException;
 import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static myratpackexamples.webpoll.ValidationExtensionsKt.flatMapPromise;
-import static myratpackexamples.promises.ValidationUtilTest.MyErrorCodes.PROMISE_FAILED;
-import static myratpackexamples.promises.ValidationUtilTest.MyErrorCodes.VALIDATION_FAILED;
+import static myratpackexamples.promises.ValidationExtensionsTest.MyErrorCodes.PROMISE_FAILED;
+import static myratpackexamples.promises.ValidationExtensionsTest.MyErrorCodes.VALIDATION_FAILED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static ratpack.exec.Promise.value;
 
-public class ValidationUtilTest {
+public class ValidationExtensionsTest {
 
     enum MyErrorCodes {
         VALIDATION_FAILED, PROMISE_FAILED
