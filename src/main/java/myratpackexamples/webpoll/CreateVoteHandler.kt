@@ -5,8 +5,7 @@ import io.netty.handler.codec.http.HttpResponseStatus
 import io.vavr.collection.Seq
 import io.vavr.collection.List
 import io.vavr.control.Validation
-import io.vavr.control.Validation.invalid
-import io.vavr.control.Validation.valid
+import io.vavr.control.Validation.*
 import myratpackexamples.webpoll.Error.VoterMustBeNonEmpty
 import myratpackexamples.webpoll.Error.TechnicalError
 import ratpack.exec.Promise
@@ -49,11 +48,16 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
             Validation<Error, kotlin.collections.List<SelectionValidated>> =
             valid(
                     (selections ?: emptyList())
-                    .map { SelectionValidated(
-                            it.option ?: "",
-                            Selected.valueOf(it.selected?.toUpperCase() ?: "NO")
-                    ) }
+                    .map { validateSelection(it).get() }
             )
+
+    private fun validateSelection(it: Selection): Validation<Seq<Error>, SelectionValidated> {
+        return combine(
+                valid(it.option ?: ""),
+                valid<Error, Selected>(Selected.valueOf(it.selected?.toUpperCase() ?: "NO"))
+        ).ap(::SelectionValidated)
+    }
+
 }
 
 sealed class Error {
