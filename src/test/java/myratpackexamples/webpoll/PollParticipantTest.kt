@@ -16,12 +16,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
     fun `System rejects an empty vote`() {
         EmbeddedApp.of { setupServer(it) }.test { httpClient ->
             // Given
-            val pollJson = """
-                {
-                    "topic": "Sport to play on Friday",
-                    "options": ["basketball", "soccer"]
-                }
-            """
+            val pollJson = somePoll()
             val createPollResponse = httpClient.post("poll", pollJson)
             val pollUri = createPollResponse.headers[LOCATION]
 
@@ -95,12 +90,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
     fun `System rejects an vote without voter`() {
         EmbeddedApp.of { setupServer(it) }.test { httpClient ->
             // Given
-            val pollJson = """
-                {
-                    "topic": "Sport to play on Friday",
-                    "options": ["basketball"]
-                }
-            """
+            val pollJson = somePoll()
             val createPollResponse = httpClient.post("poll", pollJson)
             val pollUri = createPollResponse.headers[LOCATION]
 
@@ -126,12 +116,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
     fun `System accepts an vote with voter and matching options`() {
         EmbeddedApp.of { setupServer(it) }.test { httpClient ->
             // Given
-            val pollJson = """
-                {
-                    "topic": "Sport to play on Friday",
-                    "options": ["basketball", "soccer"]
-                }
-            """
+            val pollJson = somePoll()
             val createPollResponse = httpClient.post("poll", pollJson)
             val pollUri = createPollResponse.headers[LOCATION]
 
@@ -157,5 +142,12 @@ internal class PollParticipantTest : TestHttpClientMixin {
             Assertions.assertEquals(HttpResponseStatus.CREATED.code(), response.statusCode)
         }
     }
+
+    private fun somePoll() = poll(options = listOf("basketball", "soccer"))
+
+    private fun poll(
+            topic: String = "Sport to play on Friday",
+            options: List<String>
+    ) = objectMapper.writeValueAsString(PollRequest(topic, options))
 
 }
