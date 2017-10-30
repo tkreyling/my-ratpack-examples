@@ -21,10 +21,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val pollUri = createPollResponse.headers[LOCATION]
 
             // When
-            val voteJson = """
-                {
-                }
-            """
+            val voteJson = vote(null, null)
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
@@ -35,23 +32,10 @@ internal class PollParticipantTest : TestHttpClientMixin {
     @Test
     fun `System rejects a vote on an invalid poll id`() {
         EmbeddedApp.of { setupServer(it) }.test { httpClient ->
+            // Given
+            val voteJson = someValidVote()
 
             // When
-            val voteJson = """
-                {
-                    "voter": "Markus Mustermann",
-                    "selections": [
-                        {
-                            "option": "basketball",
-                            "selected": "yes"
-                        },
-                        {
-                            "option": "soccer",
-                            "selected": "no"
-                        }
-                    ]
-                }
-            """
             val response = httpClient.post("poll/9999999/vote", voteJson)
 
             // Then
@@ -62,23 +46,10 @@ internal class PollParticipantTest : TestHttpClientMixin {
     @Test
     fun `System rejects a vote on a not existing poll`() {
         EmbeddedApp.of { setupServer(it) }.test { httpClient ->
+            // Given
+            val voteJson = someValidVote()
 
             // When
-            val voteJson = """
-                {
-                    "voter": "Markus Mustermann",
-                    "selections": [
-                        {
-                            "option": "basketball",
-                            "selected": "yes"
-                        },
-                        {
-                            "option": "soccer",
-                            "selected": "no"
-                        }
-                    ]
-                }
-            """
             val response = httpClient.post("poll/59ecf1ec9bdc9640f8b4adca/vote", voteJson)
 
             // Then
@@ -95,16 +66,10 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val pollUri = createPollResponse.headers[LOCATION]
 
             // When
-            val voteJson = """
-                {
-                    "selections": [
-                        {
-                            "option": "basketball",
-                            "selected": "yes"
-                        }
-                    ]
-                }
-            """
+            val voteJson = vote(
+                    voter = null,
+                    selections = someValidSelections()
+            )
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
@@ -121,21 +86,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val pollUri = createPollResponse.headers[LOCATION]
 
             // When
-            val voteJson = """
-                {
-                    "voter": "Markus Mustermann",
-                    "selections": [
-                        {
-                            "option": "basketball",
-                            "selected": "yes"
-                        },
-                        {
-                            "option": "soccer",
-                            "selected": "no"
-                        }
-                    ]
-                }
-            """
+            val voteJson = someValidVote()
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
@@ -143,11 +94,31 @@ internal class PollParticipantTest : TestHttpClientMixin {
         }
     }
 
-    private fun somePoll() = poll(options = listOf("basketball", "soccer"))
+    private fun somePoll() = poll(
+            topic = "Sport to play on Friday",
+            options = listOf("basketball", "soccer")
+    )
 
     private fun poll(
-            topic: String = "Sport to play on Friday",
+            topic: String,
             options: List<String>
     ) = objectMapper.writeValueAsString(PollRequest(topic, options))
+
+    private fun someValidVote() = vote(
+            voter = "Max Mustermann",
+            selections = someValidSelections()
+    )
+
+    private fun someValidSelections(): List<Selection> {
+        return listOf(
+                Selection("basketball", "yes"),
+                Selection("soccer", "no")
+        )
+    }
+
+    private fun vote(
+            voter: String?,
+            selections: List<Selection>?
+    ) = objectMapper.writeValueAsString(VoteRequest(voter, selections))
 
 }
