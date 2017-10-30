@@ -2,6 +2,7 @@ package myratpackexamples.webpoll
 
 import com.google.inject.Inject
 import io.netty.handler.codec.http.HttpResponseStatus
+import io.netty.handler.codec.http.HttpResponseStatus.*
 import io.vavr.collection.Seq
 import io.vavr.collection.List
 import io.vavr.control.Validation
@@ -10,6 +11,8 @@ import myratpackexamples.webpoll.Error.VoterMustBeNonEmpty
 import myratpackexamples.webpoll.Error.InvalidValueForSelected
 import myratpackexamples.webpoll.Error.UnknownOption
 import myratpackexamples.webpoll.Error.TechnicalError
+import myratpackexamples.webpoll.FindOneError.ExactlyOneElementExpected
+import myratpackexamples.webpoll.FindOneError.InvalidIdString
 import ratpack.exec.Promise
 import ratpack.handling.Context
 import ratpack.handling.Handler
@@ -91,17 +94,23 @@ private fun Context.createSuccessResponse(voteRequestValidated: VoteRequestValid
 }
 
 private fun Context.createErrorResponse(errors: Seq<Error>) {
-    errors.filter { error -> error is TechnicalError }
-            .forEach { _ -> response.status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()) }
-    errors.filter { error -> error is TechnicalError && error.findOneError is FindOneError.InvalidIdString }
-            .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
-    errors.filter { error -> error is TechnicalError && error.findOneError is FindOneError.ExactlyOneElementExpected }
-            .forEach { _ -> response.status(HttpResponseStatus.NOT_FOUND.code()) }
-    errors.filter { error -> error is VoterMustBeNonEmpty }
-            .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
-    errors.filter { error -> error is InvalidValueForSelected }
-            .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
-    errors.filter { error -> error is UnknownOption }
-            .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
-    response.send("")
+    errors.map { mapErrorToResponseCode(it).code() }.min().peek {
+        response.status(it)
+        response.send("")
+    }
+}
+
+fun mapErrorToResponseCode(error: Error): HttpResponseStatus {
+    return when (error) {
+        is VoterMustBeNonEmpty -> BAD_REQUEST
+        is InvalidValueForSelected -> BAD_REQUEST
+        is UnknownOption -> BAD_REQUEST
+        is TechnicalError -> {
+            when (error.findOneError) {
+                is InvalidIdString -> BAD_REQUEST
+                is ExactlyOneElementExpected -> NOT_FOUND
+                else -> INTERNAL_SERVER_ERROR
+            }
+        }
+    }
 }
