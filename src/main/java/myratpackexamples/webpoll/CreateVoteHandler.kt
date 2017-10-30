@@ -23,7 +23,7 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
         val voteRequest = context.parse(Jackson.fromJson(VoteRequest::class.java))
 
         poll.right(voteRequest).then { pair ->
-            pair.left.flatMap { validateRequest(pair.right, it) }
+            pair.left.flatMap { VoteRequestValidator(it).validateRequest(pair.right) }
                     .toEither()
                     .peek(context::createSuccessResponse)
                     .peekLeft(context::createErrorResponse)
@@ -35,8 +35,10 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
         return pollRepository.retrievePoll(pollId)
                 .map { validation -> validation.mapError<Seq<Error>> { error -> List.of(TechnicalError(error)) } }
     }
+}
 
-    private fun validateRequest(voteRequest: VoteRequest, poll: Poll): Validation<Seq<Error>, VoteRequestValidated> =
+class VoteRequestValidator(val poll: Poll) {
+    fun validateRequest(voteRequest: VoteRequest): Validation<Seq<Error>, VoteRequestValidated> =
             Validation.combine(
                     validateVoter(voteRequest.voter).mapError<Seq<Error>> { List.of(it) },
                     validateSelections(voteRequest.selections)
