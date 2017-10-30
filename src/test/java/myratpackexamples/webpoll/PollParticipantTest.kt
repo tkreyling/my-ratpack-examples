@@ -58,7 +58,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
     }
 
     @Test
-    fun `System rejects an vote without voter`() {
+    fun `System rejects a vote without voter`() {
         EmbeddedApp.of { setupServer(it) }.test { httpClient ->
             // Given
             val pollJson = somePoll()
@@ -105,9 +105,11 @@ internal class PollParticipantTest : TestHttpClientMixin {
     ) = objectMapper.writeValueAsString(PollRequest(topic, options))
 
     private fun someValidVote() = vote(
-            voter = "Max Mustermann",
+            voter = someValidVoter(),
             selections = someValidSelections()
     )
+
+    private fun someValidVoter() = "Max Mustermann"
 
     private fun someValidSelections(): List<Selection> {
         return listOf(

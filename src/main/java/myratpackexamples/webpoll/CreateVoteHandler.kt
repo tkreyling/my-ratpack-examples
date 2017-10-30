@@ -37,19 +37,18 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
 
     private fun validateRequest(voteRequest: VoteRequest, poll: Poll): Validation<Seq<Error>, VoteRequestValidated> =
             Validation.combine(
-                    validateVoter(voteRequest.voter),
+                    validateVoter(voteRequest.voter).mapError<Seq<Error>> { List.of(it) },
                     validateSelections(voteRequest.selections)
             ).ap(::VoteRequestValidated)
+                    .mapError { it.flatMap { inner -> inner } }
 
     private fun validateVoter(topic: String?): Validation<Error, String> =
             if (topic == null || topic == "") invalid(VoterMustBeNonEmpty) else valid(topic)
 
     private fun validateSelections(selections: kotlin.collections.List<Selection>?):
-            Validation<Error, kotlin.collections.List<SelectionValidated>> =
-            valid(
-                    (selections ?: emptyList())
-                    .map { validateSelection(it).get() }
-            )
+            Validation<Seq<Error>, kotlin.collections.List<SelectionValidated>> =
+            Validation.sequence((selections ?: emptyList()).map { validateSelection(it) })
+                    .map { it.asJava() }
 
     private fun validateSelection(it: Selection): Validation<Seq<Error>, SelectionValidated> {
         return combine(
