@@ -54,10 +54,12 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
     private fun validateSelection(it: Selection): Validation<Seq<Error>, SelectionValidated> {
         return combine(
                 valid(it.option ?: ""),
-                valid<Error, Selected>(Selected.valueOf(it.selected?.toUpperCase() ?: "NO"))
+                validateSelected(it.selected)
         ).ap(::SelectionValidated)
     }
 
+    private fun validateSelected(selected: String?): Validation<Error, Selected> =
+            valid(Selected.valueOf(selected?.toUpperCase() ?: "NO"))
 }
 
 sealed class Error {
