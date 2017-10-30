@@ -7,6 +7,7 @@ import io.vavr.collection.List
 import io.vavr.control.Validation
 import io.vavr.control.Validation.*
 import myratpackexamples.webpoll.Error.VoterMustBeNonEmpty
+import myratpackexamples.webpoll.Error.InvalidValueForSelected
 import myratpackexamples.webpoll.Error.TechnicalError
 import ratpack.exec.Promise
 import ratpack.handling.Context
@@ -57,12 +58,18 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
         ).ap(::SelectionValidated)
     }
 
-    private fun validateSelected(selected: String?): Validation<Error, Selected> =
+    private fun validateSelected(selected: String?): Validation<Error, Selected> {
+        return try  {
             valid(Selected.valueOf(selected?.toUpperCase() ?: "NO"))
+        } catch (e: IllegalArgumentException) {
+            invalid(InvalidValueForSelected(selected))
+        }
+    }
 }
 
 sealed class Error {
     data class TechnicalError(val findOneError: FindOneError) : Error()
+    data class InvalidValueForSelected(val invalidValue: String?) : Error()
     object VoterMustBeNonEmpty : Error()
 }
 
@@ -79,6 +86,8 @@ private fun Context.createErrorResponse(errors: Seq<Error>) {
     errors.filter { error -> error is TechnicalError && error.findOneError is FindOneError.ExactlyOneElementExpected }
             .forEach { _ -> response.status(HttpResponseStatus.NOT_FOUND.code()) }
     errors.filter { error -> error is VoterMustBeNonEmpty }
+            .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
+    errors.filter { error -> error is InvalidValueForSelected }
             .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
     response.send("")
 }
