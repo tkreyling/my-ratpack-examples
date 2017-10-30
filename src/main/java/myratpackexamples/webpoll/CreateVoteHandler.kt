@@ -8,6 +8,7 @@ import io.vavr.control.Validation
 import io.vavr.control.Validation.*
 import myratpackexamples.webpoll.Error.VoterMustBeNonEmpty
 import myratpackexamples.webpoll.Error.InvalidValueForSelected
+import myratpackexamples.webpoll.Error.UnknownOption
 import myratpackexamples.webpoll.Error.TechnicalError
 import ratpack.exec.Promise
 import ratpack.handling.Context
@@ -55,9 +56,17 @@ class VoteRequestValidator(val poll: Poll) {
 
     private fun validateSelection(it: Selection): Validation<Seq<Error>, SelectionValidated> {
         return combine(
-                valid(it.option ?: ""),
+                validateOption(it.option),
                 validateSelected(it.selected)
         ).ap(::SelectionValidated)
+    }
+
+    private fun validateOption(option: String?): Validation<Error, String> {
+        val optionNullSafe = option ?: ""
+        return if ((poll.options ?: emptyList()).contains(optionNullSafe))
+            valid(optionNullSafe)
+        else
+            invalid(UnknownOption(option))
     }
 
     private fun validateSelected(selected: String?): Validation<Error, Selected> {
@@ -72,6 +81,7 @@ class VoteRequestValidator(val poll: Poll) {
 sealed class Error {
     data class TechnicalError(val findOneError: FindOneError) : Error()
     data class InvalidValueForSelected(val invalidValue: String?) : Error()
+    data class UnknownOption(val unknownOption: String?) : Error()
     object VoterMustBeNonEmpty : Error()
 }
 
@@ -90,6 +100,8 @@ private fun Context.createErrorResponse(errors: Seq<Error>) {
     errors.filter { error -> error is VoterMustBeNonEmpty }
             .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
     errors.filter { error -> error is InvalidValueForSelected }
+            .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
+    errors.filter { error -> error is UnknownOption }
             .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
     response.send("")
 }

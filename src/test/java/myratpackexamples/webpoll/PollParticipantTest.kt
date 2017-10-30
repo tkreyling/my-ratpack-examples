@@ -116,6 +116,28 @@ internal class PollParticipantTest : TestHttpClientMixin {
         }
     }
 
+    @Test
+    fun `System rejects an vote with voter and unknown options`() {
+        EmbeddedApp.of { setupServer(it) }.test { httpClient ->
+            // Given
+            val pollJson = somePoll()
+            val createPollResponse = httpClient.post("poll", pollJson)
+            val pollUri = createPollResponse.headers[LOCATION]
+
+            // When
+            val voteJson = vote(
+                    voter = someValidVoter(),
+                    selections = listOf(
+                            Selection("handball", "yes")
+                    )
+            )
+            val response = httpClient.post(pollUri + "/vote", voteJson)
+
+            // Then
+            Assertions.assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+        }
+    }
+
     private fun somePoll() = poll(
             topic = "Sport to play on Friday",
             options = listOf("basketball", "soccer")
