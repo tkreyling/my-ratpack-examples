@@ -3,11 +3,14 @@ package myratpackexamples.webpoll
 import com.google.inject.Inject
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
+import io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST
+import io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR
 import io.vavr.collection.List
 import io.vavr.collection.Seq
 import io.vavr.control.Validation
 import io.vavr.control.Validation.invalid
 import io.vavr.control.Validation.valid
+import myratpackexamples.webpoll.CreatePollHandler.Error
 import myratpackexamples.webpoll.CreatePollHandler.Error.TechnicalError
 import myratpackexamples.webpoll.CreatePollHandler.Error.TopicMustBeNonEmpty
 import ratpack.exec.Promise
@@ -55,11 +58,16 @@ private fun Context.createSuccessResponse(poll: Poll) {
     response.send("")
 }
 
-private fun Context.createErrorResponse(errors: Seq<CreatePollHandler.Error>) {
-    errors.filter { error -> error is TechnicalError }
-            .forEach { _ -> response.status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()) }
-    errors.filter { error -> error is TopicMustBeNonEmpty }
-            .forEach { _ -> response.status(HttpResponseStatus.BAD_REQUEST.code()) }
+private fun Context.createErrorResponse(errors: Seq<Error>) {
+    errors.map { mapErrorToResponseCode(it).code() }.min().peek {
+        response.status(it)
+        response.send("")
+    }
+}
 
-    response.send("")
+private fun mapErrorToResponseCode(error: Error): HttpResponseStatus {
+    return when (error) {
+        is TopicMustBeNonEmpty -> BAD_REQUEST
+        is TechnicalError -> INTERNAL_SERVER_ERROR
+    }
 }
