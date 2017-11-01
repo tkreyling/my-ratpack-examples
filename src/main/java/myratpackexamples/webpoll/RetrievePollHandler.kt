@@ -3,6 +3,7 @@ package myratpackexamples.webpoll
 import com.google.inject.Inject
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpResponseStatus
+import io.netty.handler.codec.http.HttpResponseStatus.*
 import myratpackexamples.webpoll.FindOneError.ExactlyOneElementExpected
 import myratpackexamples.webpoll.FindOneError.InvalidIdString
 import ratpack.handling.Context
@@ -30,12 +31,14 @@ private fun Context.createSuccessResponse(poll: Poll) {
 }
 
 private fun Context.createFailureResponse(error: FindOneError) {
-    if (error is ExactlyOneElementExpected) {
-        response.status(HttpResponseStatus.NOT_FOUND.code())
-    } else if (error is InvalidIdString) {
-        response.status(HttpResponseStatus.BAD_REQUEST.code())
-    } else {
-        response.status(HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
-    }
+    response.status(mapErrorToResponseCode(error).code())
     response.send("")
+}
+
+private fun mapErrorToResponseCode(error: FindOneError): HttpResponseStatus {
+    return when (error) {
+        is ExactlyOneElementExpected -> NOT_FOUND
+        is InvalidIdString -> BAD_REQUEST
+        else -> INTERNAL_SERVER_ERROR
+    }
 }
