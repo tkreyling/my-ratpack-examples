@@ -100,7 +100,7 @@ private fun Context.createErrorResponse(errors: Seq<Error>) {
     }
 }
 
-fun mapErrorToResponseCode(error: Error): HttpResponseStatus {
+private fun mapErrorToResponseCode(error: Error): HttpResponseStatus {
     return when (error) {
         is VoterMustBeNonEmpty -> BAD_REQUEST
         is InvalidValueForSelected -> BAD_REQUEST
