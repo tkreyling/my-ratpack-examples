@@ -66,7 +66,7 @@ class VoteRequestValidator(val poll: Poll) {
 
     private fun validateOption(option: String?): Validation<Error, String> {
         val optionNullSafe = option ?: ""
-        return if ((poll.options ?: emptyList()).contains(optionNullSafe))
+        return if (poll.options.contains(optionNullSafe))
             valid(optionNullSafe)
         else
             invalid(UnknownOption(option))
