@@ -42,11 +42,11 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
 }
 
 class VoteRequestValidator(val poll: Poll) {
-    fun validateRequest(voteRequest: VoteRequest): Validation<Seq<Error>, VoteRequestValidated> =
+    fun validateRequest(voteRequest: VoteRequest): Validation<Seq<Error>, VoteRequestValidated.Vote> =
             Validation.combine(
                     validateVoter(voteRequest.voter).mapError<Seq<Error>> { List.of(it) },
                     validateSelections(voteRequest.selections)
-            ).ap(::VoteRequestValidated)
+            ).ap { voter, selections -> VoteRequestValidated.Vote(voter, selections) }
                     .mapError { it.flatMap { inner -> inner } }
 
     private fun validateVoter(topic: String?): Validation<Error, String> =
@@ -88,7 +88,7 @@ sealed class Error {
     object VoterMustBeNonEmpty : Error()
 }
 
-private fun Context.createSuccessResponse(voteRequestValidated: VoteRequestValidated) {
+private fun Context.createSuccessResponse(voteRequestValidated: VoteRequestValidated.Vote) {
     response.status(HttpResponseStatus.CREATED.code())
     response.send("")
 }
