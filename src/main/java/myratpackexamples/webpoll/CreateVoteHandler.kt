@@ -72,9 +72,9 @@ class VoteRequestValidator(val poll: Poll) {
             invalid(UnknownOption(option))
     }
 
-    private fun validateSelected(selected: String?): Validation<Error, Selected> {
+    private fun validateSelected(selected: String?): Validation<Error, VoteRequestValidated.Selected> {
         return try  {
-            valid(Selected.valueOf(selected?.toUpperCase() ?: "NO"))
+            valid(VoteRequestValidated.Selected.valueOf(selected?.toUpperCase() ?: "NO"))
         } catch (e: IllegalArgumentException) {
             invalid(InvalidValueForSelected(selected))
         }

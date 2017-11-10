@@ -10,8 +10,8 @@ class VoteRequestValidated {
             val option: String,
             val selected: Selected
     )
-}
 
-enum class Selected {
-    YES, NO, MAYBE
+    enum class Selected {
+        YES, NO, MAYBE
+    }
 }
