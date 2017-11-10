@@ -88,7 +88,9 @@ sealed class Error {
     object VoterMustBeNonEmpty : Error()
 }
 
-private fun Context.createSuccessResponse(voteRequestValidated: VoteRequestValidated.Vote) {
+private fun Context.createSuccessResponse(
+        @Suppress("UNUSED_PARAMETER") voteRequestValidated: VoteRequestValidated.Vote
+) {
     response.status(HttpResponseStatus.CREATED.code())
     response.send("")
 }
