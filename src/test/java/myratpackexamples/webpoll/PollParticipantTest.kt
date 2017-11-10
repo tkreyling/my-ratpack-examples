@@ -89,7 +89,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val voteJson = vote(
                     voter = someValidVoter(),
                     selections = listOf(
-                            Selection("basketball", "some invalid value")
+                            VoteRequest.Selection("basketball", "some invalid value")
                     )
             )
             val response = httpClient.post(pollUri + "/vote", voteJson)
@@ -128,7 +128,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val voteJson = vote(
                     voter = someValidVoter(),
                     selections = listOf(
-                            Selection("handball", "yes")
+                            VoteRequest.Selection("handball", "yes")
                     )
             )
             val response = httpClient.post(pollUri + "/vote", voteJson)
@@ -155,16 +155,16 @@ internal class PollParticipantTest : TestHttpClientMixin {
 
     private fun someValidVoter() = "Max Mustermann"
 
-    private fun someValidSelections(): List<Selection> {
+    private fun someValidSelections(): List<VoteRequest.Selection> {
         return listOf(
-                Selection("basketball", "yes"),
-                Selection("soccer", "no")
+                VoteRequest.Selection("basketball", "yes"),
+                VoteRequest.Selection("soccer", "no")
         )
     }
 
     private fun vote(
             voter: String?,
-            selections: List<Selection>?
-    ) = objectMapper.writeValueAsString(VoteRequest(voter, selections))
+            selections: List<VoteRequest.Selection>?
+    ) = objectMapper.writeValueAsString(VoteRequest.Vote(voter, selections))
 
 }

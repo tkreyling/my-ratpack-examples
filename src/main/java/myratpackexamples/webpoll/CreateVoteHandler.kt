@@ -24,7 +24,7 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
         val pollId = context.pathTokens["poll"]
         val poll = retrievePoll(pollId)
 
-        val voteRequest = context.parse(Jackson.fromJson(VoteRequest::class.java))
+        val voteRequest = context.parse(Jackson.fromJson(VoteRequest.Vote::class.java))
 
         poll.right(voteRequest).then { pair ->
             pair.left.flatMap { VoteRequestValidator(it).validateRequest(pair.right) }
@@ -42,7 +42,7 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
 }
 
 class VoteRequestValidator(val poll: Poll) {
-    fun validateRequest(voteRequest: VoteRequest): Validation<Seq<Error>, VoteRequestValidated.Vote> =
+    fun validateRequest(voteRequest: VoteRequest.Vote): Validation<Seq<Error>, VoteRequestValidated.Vote> =
             Validation.combine(
                     validateVoter(voteRequest.voter).mapError<Seq<Error>> { List.of(it) },
                     validateSelections(voteRequest.selections)
@@ -52,12 +52,12 @@ class VoteRequestValidator(val poll: Poll) {
     private fun validateVoter(topic: String?): Validation<Error, String> =
             if (topic == null || topic == "") invalid(VoterMustBeNonEmpty) else valid(topic)
 
-    private fun validateSelections(selections: kotlin.collections.List<Selection>?):
+    private fun validateSelections(selections: kotlin.collections.List<VoteRequest.Selection>?):
             Validation<Seq<Error>, kotlin.collections.List<VoteRequestValidated.Selection>> =
             Validation.sequence((selections ?: emptyList()).map { validateSelection(it) })
                     .map { it.asJava() }
 
-    private fun validateSelection(it: Selection): Validation<Seq<Error>, VoteRequestValidated.Selection> {
+    private fun validateSelection(it: VoteRequest.Selection): Validation<Seq<Error>, VoteRequestValidated.Selection> {
         return combine(
                 validateOption(it.option),
                 validateSelected(it.selected)
