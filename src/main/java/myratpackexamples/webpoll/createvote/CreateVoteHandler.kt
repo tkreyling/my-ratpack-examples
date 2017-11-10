@@ -7,11 +7,10 @@ import io.vavr.collection.Seq
 import io.vavr.collection.List
 import io.vavr.control.Validation
 import io.vavr.control.Validation.*
-import myratpackexamples.webpoll.createvote.Error.VoterMustBeNonEmpty
-import myratpackexamples.webpoll.createvote.Error.InvalidValueForSelected
-import myratpackexamples.webpoll.createvote.Error.UnknownOption
-import myratpackexamples.webpoll.createvote.Error.TechnicalError
-import myratpackexamples.webpoll.FindOneError
+import myratpackexamples.webpoll.createvote.CreateVoteError.VoterMustBeNonEmpty
+import myratpackexamples.webpoll.createvote.CreateVoteError.InvalidValueForSelected
+import myratpackexamples.webpoll.createvote.CreateVoteError.UnknownOption
+import myratpackexamples.webpoll.createvote.CreateVoteError.TechnicalError
 import myratpackexamples.webpoll.FindOneError.ExactlyOneElementExpected
 import myratpackexamples.webpoll.FindOneError.InvalidIdString
 import myratpackexamples.webpoll.Poll
@@ -39,36 +38,36 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
         }
     }
 
-    private fun retrievePoll(pollId: String?): Promise<Validation<Seq<Error>, Poll>> {
+    private fun retrievePoll(pollId: String?): Promise<Validation<Seq<CreateVoteError>, Poll>> {
         return pollRepository.retrievePoll(pollId)
-                .map { validation -> validation.mapError<Seq<Error>> { error -> List.of(TechnicalError(error)) } }
+                .map { validation -> validation.mapError<Seq<CreateVoteError>> { error -> List.of(TechnicalError(error)) } }
     }
 }
 
 class VoteRequestValidator(val poll: Poll) {
-    fun validateRequest(voteRequest: VoteRequest.Vote): Validation<Seq<Error>, VoteRequestValidated.Vote> =
+    fun validateRequest(voteRequest: VoteRequest.Vote): Validation<Seq<CreateVoteError>, VoteRequestValidated.Vote> =
             Validation.combine(
-                    validateVoter(voteRequest.voter).mapError<Seq<Error>> { List.of(it) },
+                    validateVoter(voteRequest.voter).mapError<Seq<CreateVoteError>> { List.of(it) },
                     validateSelections(voteRequest.selections)
             ).ap { voter, selections -> VoteRequestValidated.Vote(voter, selections) }
                     .mapError { it.flatMap { inner -> inner } }
 
-    private fun validateVoter(topic: String?): Validation<Error, String> =
+    private fun validateVoter(topic: String?): Validation<CreateVoteError, String> =
             if (topic == null || topic == "") invalid(VoterMustBeNonEmpty) else valid(topic)
 
     private fun validateSelections(selections: kotlin.collections.List<VoteRequest.Selection>?):
-            Validation<Seq<Error>, kotlin.collections.List<VoteRequestValidated.Selection>> =
+            Validation<Seq<CreateVoteError>, kotlin.collections.List<VoteRequestValidated.Selection>> =
             Validation.sequence((selections ?: emptyList()).map { validateSelection(it) })
                     .map { it.asJava() }
 
-    private fun validateSelection(it: VoteRequest.Selection): Validation<Seq<Error>, VoteRequestValidated.Selection> {
+    private fun validateSelection(it: VoteRequest.Selection): Validation<Seq<CreateVoteError>, VoteRequestValidated.Selection> {
         return combine(
                 validateOption(it.option),
                 validateSelected(it.selected)
         ).ap { option, selected -> VoteRequestValidated.Selection(option, selected) }
     }
 
-    private fun validateOption(option: String?): Validation<Error, String> {
+    private fun validateOption(option: String?): Validation<CreateVoteError, String> {
         val optionNullSafe = option ?: ""
         return if (poll.options.contains(optionNullSafe))
             valid(optionNullSafe)
@@ -76,20 +75,13 @@ class VoteRequestValidator(val poll: Poll) {
             invalid(UnknownOption(option))
     }
 
-    private fun validateSelected(selected: String?): Validation<Error, VoteRequestValidated.Selected> {
+    private fun validateSelected(selected: String?): Validation<CreateVoteError, VoteRequestValidated.Selected> {
         return try  {
             valid(VoteRequestValidated.Selected.valueOf(selected?.toUpperCase() ?: "NO"))
         } catch (e: IllegalArgumentException) {
             invalid(InvalidValueForSelected(selected))
         }
     }
-}
-
-sealed class Error {
-    data class TechnicalError(val findOneError: FindOneError) : Error()
-    data class InvalidValueForSelected(val invalidValue: String?) : Error()
-    data class UnknownOption(val unknownOption: String?) : Error()
-    object VoterMustBeNonEmpty : Error()
 }
 
 private fun Context.createSuccessResponse(
@@ -99,14 +91,14 @@ private fun Context.createSuccessResponse(
     response.send("")
 }
 
-private fun Context.createErrorResponse(errors: Seq<Error>) {
+private fun Context.createErrorResponse(errors: Seq<CreateVoteError>) {
     errors.map { mapErrorToResponseCode(it).code() }.min().peek {
         response.status(it)
         response.send("")
     }
 }
 
-private fun mapErrorToResponseCode(error: Error): HttpResponseStatus {
+private fun mapErrorToResponseCode(error: CreateVoteError): HttpResponseStatus {
     return when (error) {
         is VoterMustBeNonEmpty -> BAD_REQUEST
         is InvalidValueForSelected -> BAD_REQUEST
