@@ -1,4 +1,4 @@
-package myratpackexamples.webpoll
+package myratpackexamples.webpoll.createvote
 
 class VoteRequestValidated {
     data class Vote(
