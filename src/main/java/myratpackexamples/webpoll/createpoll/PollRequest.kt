@@ -1,4 +1,4 @@
-package myratpackexamples.webpoll
+package myratpackexamples.webpoll.createpoll
 
 data class PollRequest(
         val topic: String?,

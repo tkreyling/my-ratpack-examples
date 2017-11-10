@@ -8,6 +8,7 @@ import com.mongodb.async.client.MongoCollection
 import io.vavr.control.Validation
 import io.vavr.control.Validation.invalid
 import myratpackexamples.webpoll.InsertOneError.InsertOneJsonProcessingError
+import myratpackexamples.webpoll.createpoll.PollRequestValidated
 import org.bson.Document
 import ratpack.exec.Promise
 import ratpack.exec.Promise.value

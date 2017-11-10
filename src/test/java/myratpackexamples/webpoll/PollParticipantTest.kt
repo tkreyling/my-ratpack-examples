@@ -3,6 +3,8 @@ package myratpackexamples.webpoll
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.netty.handler.codec.http.HttpHeaderNames.LOCATION
 import io.netty.handler.codec.http.HttpResponseStatus
+import myratpackexamples.webpoll.createpoll.PollRequest
+import myratpackexamples.webpoll.createvote.VoteRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

@@ -1,4 +1,4 @@
-package myratpackexamples.webpoll
+package myratpackexamples.webpoll.createpoll
 
 import com.google.inject.Inject
 import io.netty.handler.codec.http.HttpHeaderNames
@@ -10,9 +10,10 @@ import io.vavr.collection.Seq
 import io.vavr.control.Validation
 import io.vavr.control.Validation.invalid
 import io.vavr.control.Validation.valid
-import myratpackexamples.webpoll.CreatePollHandler.Error
-import myratpackexamples.webpoll.CreatePollHandler.Error.TechnicalError
-import myratpackexamples.webpoll.CreatePollHandler.Error.TopicMustBeNonEmpty
+import myratpackexamples.webpoll.*
+import myratpackexamples.webpoll.createpoll.CreatePollHandler.Error
+import myratpackexamples.webpoll.createpoll.CreatePollHandler.Error.TechnicalError
+import myratpackexamples.webpoll.createpoll.CreatePollHandler.Error.TopicMustBeNonEmpty
 import ratpack.exec.Promise
 import ratpack.handling.Context
 import ratpack.handling.Handler

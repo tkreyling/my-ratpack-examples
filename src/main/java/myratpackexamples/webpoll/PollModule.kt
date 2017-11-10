@@ -2,6 +2,7 @@ package myratpackexamples.webpoll
 
 import com.google.inject.Binder
 import com.google.inject.Module
+import myratpackexamples.webpoll.createpoll.CreatePollHandler
 import myratpackexamples.webpoll.createvote.CreateVoteHandler
 
 class PollModule : Module {
