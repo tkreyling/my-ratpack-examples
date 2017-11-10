@@ -53,15 +53,15 @@ class VoteRequestValidator(val poll: Poll) {
             if (topic == null || topic == "") invalid(VoterMustBeNonEmpty) else valid(topic)
 
     private fun validateSelections(selections: kotlin.collections.List<Selection>?):
-            Validation<Seq<Error>, kotlin.collections.List<SelectionValidated>> =
+            Validation<Seq<Error>, kotlin.collections.List<VoteRequestValidated.Selection>> =
             Validation.sequence((selections ?: emptyList()).map { validateSelection(it) })
                     .map { it.asJava() }
 
-    private fun validateSelection(it: Selection): Validation<Seq<Error>, SelectionValidated> {
+    private fun validateSelection(it: Selection): Validation<Seq<Error>, VoteRequestValidated.Selection> {
         return combine(
                 validateOption(it.option),
                 validateSelected(it.selected)
-        ).ap(::SelectionValidated)
+        ).ap { option, selected -> VoteRequestValidated.Selection(option, selected) }
     }
 
     private fun validateOption(option: String?): Validation<Error, String> {
