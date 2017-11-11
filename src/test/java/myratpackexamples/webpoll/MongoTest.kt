@@ -16,7 +16,7 @@ class MongoTest {
     private val objectMapper = ObjectMapper()
 
     @Test
-    internal fun testDb() {
+    internal fun `after inserting a document into mongo it has a mongo id`() {
         ExecHarness.executeSingle(Operation.of {
             InMemoryMongoDb().use { inMemoryMongoDb ->
                 val collection = createConnectionAndGetCollection(inMemoryMongoDb)
