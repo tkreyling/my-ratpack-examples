@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static myratpackexamples.webpoll.MongoCollectionExtensionsKt.insertOne;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,7 +34,9 @@ public class MongoTest {
 
                 MongoCollection<Document> collection = database.getCollection("test");
 
-                PollResponse.Poll poll = new PollResponse.Poll(null, "Sport to play on Friday", asList("basketball"));
+                PollResponse.Poll poll = new PollResponse.Poll(
+                        null, "Sport to play on Friday", asList("basketball"), emptyList()
+                );
                 String pollJson = objectMapper.writeValueAsString(poll);
 
                 Document doc = Document.parse(pollJson);

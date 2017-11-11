@@ -46,7 +46,8 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
         return PollResponse.Poll(
                 document.getObjectId("_id").toHexString(),
                 document.getString("topic"),
-                document["options"] as MutableList<String>
+                document["options"] as MutableList<String>,
+                emptyList()
         )
     }
 }
