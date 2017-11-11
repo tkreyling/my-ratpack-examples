@@ -29,12 +29,10 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
 
         val voteRequest = context.parse(Jackson.fromJson(VoteRequest.Vote::class.java))
 
-        poll.right(voteRequest).then { pair ->
+        poll.right(voteRequest).map { pair ->
             pair.left.flatMap { VoteRequestValidator(it).validateRequest(pair.right) }
-                    .toEither()
-                    .peek(context::createSuccessResponse)
-                    .peekLeft(context::createErrorResponse)
-
+        }.then {
+            it.toEither().peek(context::createSuccessResponse).peekLeft(context::createErrorResponse)
         }
     }
 
