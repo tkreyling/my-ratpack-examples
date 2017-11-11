@@ -22,7 +22,7 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
             return database.getCollection("polls")
         }
 
-    fun storePoll(pollRequest: PollRequestValidated): Promise<Validation<InsertOneError, Poll>> {
+    fun storePoll(pollRequest: PollRequestValidated): Promise<Validation<InsertOneError, PollResponse.Poll>> {
         try {
             val pollJson = objectMapper.writeValueAsString(pollRequest)
             val pollBsonDocument = Document.parse(pollJson)
@@ -31,19 +31,19 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
                     .map { it.map { _ -> pollBsonDocument }.map(this::mapBsonDocumentToDomainObject) }
 
         } catch (e: JsonProcessingException) {
-            return value(invalid<InsertOneError, Poll>(InsertOneJsonProcessingError(e)))
+            return value(invalid<InsertOneError, PollResponse.Poll>(InsertOneJsonProcessingError(e)))
         }
 
     }
 
-    fun retrievePoll(pollId: String?): Promise<Validation<FindOneError, Poll>> {
+    fun retrievePoll(pollId: String?): Promise<Validation<FindOneError, PollResponse.Poll>> {
         return pollsCollection.findOneById(pollId)
                 .map { it.map(this::mapBsonDocumentToDomainObject) }
     }
 
-    private fun mapBsonDocumentToDomainObject(document: Document): Poll {
+    private fun mapBsonDocumentToDomainObject(document: Document): PollResponse.Poll {
         @Suppress("UNCHECKED_CAST")
-        return Poll(
+        return PollResponse.Poll(
                 document.getObjectId("_id").toHexString(),
                 document.getString("topic"),
                 document["options"] as MutableList<String>

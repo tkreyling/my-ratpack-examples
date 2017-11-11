@@ -33,7 +33,7 @@ public class MongoTest {
 
                 MongoCollection<Document> collection = database.getCollection("test");
 
-                Poll poll = new Poll(null, "Sport to play on Friday", asList("basketball"));
+                PollResponse.Poll poll = new PollResponse.Poll(null, "Sport to play on Friday", asList("basketball"));
                 String pollJson = objectMapper.writeValueAsString(poll);
 
                 Document doc = Document.parse(pollJson);

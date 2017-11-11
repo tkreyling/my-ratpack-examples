@@ -13,8 +13,8 @@ import myratpackexamples.webpoll.createvote.CreateVoteError.UnknownOption
 import myratpackexamples.webpoll.createvote.CreateVoteError.TechnicalError
 import myratpackexamples.webpoll.FindOneError.ExactlyOneElementExpected
 import myratpackexamples.webpoll.FindOneError.InvalidIdString
-import myratpackexamples.webpoll.Poll
 import myratpackexamples.webpoll.PollRepository
+import myratpackexamples.webpoll.PollResponse
 import myratpackexamples.webpoll.ap
 import ratpack.exec.Promise
 import ratpack.handling.Context
@@ -38,13 +38,13 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
         }
     }
 
-    private fun retrievePoll(pollId: String?): Promise<Validation<Seq<CreateVoteError>, Poll>> {
+    private fun retrievePoll(pollId: String?): Promise<Validation<Seq<CreateVoteError>, PollResponse.Poll>> {
         return pollRepository.retrievePoll(pollId)
                 .map { validation -> validation.mapError<Seq<CreateVoteError>> { error -> List.of(TechnicalError(error)) } }
     }
 }
 
-class VoteRequestValidator(val poll: Poll) {
+class VoteRequestValidator(val poll: PollResponse.Poll) {
     fun validateRequest(voteRequest: VoteRequest.Vote): Validation<Seq<CreateVoteError>, VoteRequestValidated.Vote> =
             Validation.combine(
                     validateVoter(voteRequest.voter).mapError<Seq<CreateVoteError>> { List.of(it) },

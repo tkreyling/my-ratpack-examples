@@ -32,7 +32,7 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
         }
     }
 
-    private fun storePoll(poll: PollRequestValidated): Promise<Validation<Seq<CreatePollError>, Poll>> {
+    private fun storePoll(poll: PollRequestValidated): Promise<Validation<Seq<CreatePollError>, PollResponse.Poll>> {
         return pollRepository.storePoll(poll)
                 .map { validation -> validation.mapError<Seq<CreatePollError>> { error -> List.of(TechnicalError(error)) } }
     }
@@ -48,7 +48,7 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
 
 }
 
-private fun Context.createSuccessResponse(poll: Poll) {
+private fun Context.createSuccessResponse(poll: PollResponse.Poll) {
     response.headers.add(HttpHeaderNames.LOCATION, "poll/" + poll.id)
     response.status(HttpResponseStatus.CREATED.code())
     response.send("")

@@ -24,7 +24,7 @@ class RetrievePollHandler @Inject constructor(val pollRepository: PollRepository
     }
 }
 
-private fun Context.createSuccessResponse(poll: Poll) {
+private fun Context.createSuccessResponse(poll: PollResponse.Poll) {
     response.headers.add(HttpHeaderNames.LOCATION, "poll/" + poll.id)
     response.status(HttpResponseStatus.OK.code())
     render(Jackson.json(poll))
