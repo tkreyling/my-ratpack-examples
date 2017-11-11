@@ -22,9 +22,9 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
             return database.getCollection("polls")
         }
 
-    fun storePoll(pollRequest: PollRequestValidated): Promise<Validation<InsertOneError, PollResponse.Poll>> {
+    fun storePoll(poll: PollEntity.Poll): Promise<Validation<InsertOneError, PollResponse.Poll>> {
         try {
-            val pollJson = objectMapper.writeValueAsString(pollRequest)
+            val pollJson = objectMapper.writeValueAsString(poll)
             val pollBsonDocument = Document.parse(pollJson)
 
             return pollsCollection.insertOne(pollBsonDocument)

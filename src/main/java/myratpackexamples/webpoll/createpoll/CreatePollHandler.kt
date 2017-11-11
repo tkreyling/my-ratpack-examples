@@ -23,6 +23,7 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
     override fun handle(context: Context) {
         context.parse(fromJson(PollRequest::class.java)).then { pollRequest ->
             validateRequest(pollRequest)
+                    .map(this::mapToEntity)
                     .flatMapPromise(this::storePoll)
                     .then {
                         it.toEither()
@@ -32,7 +33,14 @@ class CreatePollHandler @Inject constructor(val pollRepository: PollRepository) 
         }
     }
 
-    private fun storePoll(poll: PollRequestValidated): Promise<Validation<Seq<CreatePollError>, PollResponse.Poll>> {
+    private fun mapToEntity(poll: PollRequestValidated) = PollEntity.Poll(
+            id = null,
+            topic = poll.topic,
+            options = poll.options,
+            votes = emptyList()
+    )
+
+    private fun storePoll(poll: PollEntity.Poll): Promise<Validation<Seq<CreatePollError>, PollResponse.Poll>> {
         return pollRepository.storePoll(poll)
                 .map { validation -> validation.mapError<Seq<CreatePollError>> { error -> List.of(TechnicalError(error)) } }
     }
