@@ -7,24 +7,23 @@ import org.bson.Document
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import ratpack.exec.Operation
 import ratpack.test.exec.ExecHarness
 import java.util.Arrays.asList
-import java.util.Collections.emptyList
 
+@ExtendWith(InMemoryMongoDbJunitExtension::class)
 class MongoTest {
     private val objectMapper = ObjectMapper()
 
     @Test
-    internal fun `after inserting a document into mongo it has a mongo id`() {
+    fun `after inserting a document into mongo it has a mongo id`() {
         ExecHarness.executeSingle(Operation.of {
-            InMemoryMongoDb().use { inMemoryMongoDb ->
-                val collection = createConnectionAndGetCollection(inMemoryMongoDb)
+                val collection = createConnectionAndGetCollection()
                 val doc = createPollDocument()
 
                 collection.insertOne(doc)
                         .result { assertNotNull(doc["_id"]) }
-            }
         })
     }
 
@@ -41,8 +40,8 @@ class MongoTest {
         return doc
     }
 
-    private fun createConnectionAndGetCollection(inMemoryMongoDb: InMemoryMongoDb): MongoCollection<Document> {
-        val mongo = MongoClients.create(inMemoryMongoDb.connectionString)
+    private fun createConnectionAndGetCollection(): MongoCollection<Document> {
+        val mongo = MongoClients.create("mongodb://localhost:12345")
         val database = mongo.getDatabase("test")
         return database.getCollection("test")
     }
