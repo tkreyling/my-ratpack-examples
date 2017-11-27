@@ -2,10 +2,12 @@ package myratpackexamples.webpoll
 
 import com.mongodb.async.client.MongoCollection
 import com.mongodb.client.model.Filters
+import com.mongodb.client.result.UpdateResult
 import io.vavr.control.Validation
 import io.vavr.control.Validation.invalid
 import io.vavr.control.Validation.valid
 import myratpackexamples.webpoll.FindOneError.*
+import myratpackexamples.webpoll.UpdateOneError.*
 import myratpackexamples.webpoll.InsertOneError.InsertOneMongoError
 import org.bson.Document
 import org.bson.conversions.Bson
@@ -31,6 +33,28 @@ fun MongoCollection<Document>.insertOne(document: Document): Promise<Validation<
     }
 }
 
+sealed class UpdateOneError {
+    data class InvalidIdString(val idString: String?) : UpdateOneError()
+    data class UpdateOneMongoError(val throwable: Throwable?) : UpdateOneError()
+}
+
+fun MongoCollection<Document>.replaceOne(hexIdString: String?, document: Document): Promise<Validation<UpdateOneError, UpdateResult>>  =
+        createMongoObjectId(hexIdString)
+                .mapError { UpdateOneError.InvalidIdString(it.idString) as UpdateOneError }
+                .flatMapPromise { replaceOne(Filters.eq("_id", it), document) }
+
+private fun MongoCollection<Document>.replaceOne(filter: Bson, document: Document): Promise<Validation<UpdateOneError, UpdateResult>> {
+    return async { downstream ->
+        replaceOne(filter, document) { result, throwable ->
+            if (throwable != null) {
+                downstream.success(invalid(UpdateOneMongoError(throwable)))
+            } else {
+                downstream.success(valid(result))
+            }
+        }
+    }
+}
+
 sealed class FindOneError {
     object ExactlyOneElementExpected : FindOneError()
     data class InvalidIdString(val idString: String?) : FindOneError()
@@ -39,9 +63,12 @@ sealed class FindOneError {
 
 fun MongoCollection<Document>.findOneById(hexIdString: String?): Promise<Validation<FindOneError, Document>> =
         createMongoObjectId(hexIdString)
+                .mapError { FindOneError.InvalidIdString(it.idString) as FindOneError }
                 .flatMapPromise { findOne(Filters.eq("_id", it)) }
 
-private fun createMongoObjectId(hexIdString: String?): Validation<FindOneError, ObjectId> {
+data class InvalidIdString(val idString: String?)
+
+private fun createMongoObjectId(hexIdString: String?): Validation<InvalidIdString, ObjectId> {
     return try {
         valid(ObjectId(hexIdString))
     } catch (e: IllegalArgumentException) {
