@@ -7,7 +7,7 @@ import io.vavr.control.Validation
 import io.vavr.control.Validation.invalid
 import io.vavr.control.Validation.valid
 import myratpackexamples.webpoll.FindOneError.*
-import myratpackexamples.webpoll.UpdateOneError.*
+import myratpackexamples.webpoll.ReplaceOneError.*
 import myratpackexamples.webpoll.InsertOneError.InsertOneMongoError
 import org.bson.Document
 import org.bson.conversions.Bson
@@ -33,21 +33,21 @@ fun MongoCollection<Document>.insertOne(document: Document): Promise<Validation<
     }
 }
 
-sealed class UpdateOneError {
-    data class InvalidIdString(val idString: String?) : UpdateOneError()
-    data class UpdateOneMongoError(val throwable: Throwable?) : UpdateOneError()
+sealed class ReplaceOneError {
+    data class InvalidIdString(val idString: String?) : ReplaceOneError()
+    data class ReplaceOneMongoError(val throwable: Throwable?) : ReplaceOneError()
 }
 
-fun MongoCollection<Document>.replaceOne(hexIdString: String?, document: Document): Promise<Validation<UpdateOneError, UpdateResult>>  =
+fun MongoCollection<Document>.replaceOne(hexIdString: String?, document: Document): Promise<Validation<ReplaceOneError, UpdateResult>>  =
         createMongoObjectId(hexIdString)
-                .mapError { UpdateOneError.InvalidIdString(it.idString) as UpdateOneError }
+                .mapError { ReplaceOneError.InvalidIdString(it.idString) as ReplaceOneError }
                 .flatMapPromise { replaceOne(Filters.eq("_id", it), document) }
 
-private fun MongoCollection<Document>.replaceOne(filter: Bson, document: Document): Promise<Validation<UpdateOneError, UpdateResult>> {
+private fun MongoCollection<Document>.replaceOne(filter: Bson, document: Document): Promise<Validation<ReplaceOneError, UpdateResult>> {
     return async { downstream ->
         replaceOne(filter, document) { result, throwable ->
             if (throwable != null) {
-                downstream.success(invalid(UpdateOneMongoError(throwable)))
+                downstream.success(invalid(ReplaceOneMongoError(throwable)))
             } else {
                 downstream.success(valid(result))
             }
