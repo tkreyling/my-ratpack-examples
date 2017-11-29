@@ -36,6 +36,7 @@ fun MongoCollection<Document>.insertOne(document: Document): Promise<Validation<
 sealed class ReplaceOneError {
     data class InvalidIdString(val idString: String?) : ReplaceOneError()
     data class ReplaceOneMongoError(val throwable: Throwable?) : ReplaceOneError()
+    data class ReplaceOneJsonProcessingError(val throwable: Throwable?) : ReplaceOneError()
 }
 
 fun MongoCollection<Document>.replaceOne(hexIdString: String?, document: Document): Promise<Validation<ReplaceOneError, UpdateResult>>  =

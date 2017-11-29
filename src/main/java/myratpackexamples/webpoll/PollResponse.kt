@@ -20,9 +20,12 @@ class PollResponse {
     }
 
     data class Selection(
-            val option: String,
-            val selected: SelectedResponse
-    )
+            val option: String?,
+            val selected: SelectedResponse?
+    ) {
+        @Suppress("unused")
+        private constructor() : this(null, null)
+    }
 
     enum class SelectedResponse {
         YES, NO, MAYBE

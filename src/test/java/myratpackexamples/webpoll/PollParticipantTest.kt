@@ -140,6 +140,29 @@ internal class PollParticipantTest : TestHttpClientMixin {
         }
     }
 
+    @Test
+    fun `System retains a valid vote`() {
+        EmbeddedApp.of { setupServer(it) }.test { httpClient ->
+            // Given
+            val pollJson = somePoll()
+            val createPollResponse = httpClient.post("poll", pollJson)
+            val pollUri = createPollResponse.headers[LOCATION]
+
+            // When
+            val voteJson = someValidVote()
+            httpClient.post(pollUri + "/vote", voteJson)
+
+            // Then
+            val poll = httpClient.get(pollUri, PollResponse.Poll::class.java)
+
+            Assertions.assertEquals(1, poll.votes.size)
+            Assertions.assertEquals("Max Mustermann", poll.votes[0].voter)
+            Assertions.assertEquals(2, poll.votes[0].selections.size)
+            Assertions.assertEquals("basketball", poll.votes[0].selections[0].option)
+            Assertions.assertEquals("YES", poll.votes[0].selections[0].selected.toString())
+        }
+    }
+
     private fun somePoll() = poll(
             topic = "Sport to play on Friday",
             options = listOf("basketball", "soccer")

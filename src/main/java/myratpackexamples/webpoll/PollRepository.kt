@@ -8,7 +8,6 @@ import com.mongodb.async.client.MongoCollection
 import io.vavr.control.Validation
 import io.vavr.control.Validation.invalid
 import myratpackexamples.webpoll.InsertOneError.InsertOneJsonProcessingError
-import myratpackexamples.webpoll.createpoll.PollRequestValidated
 import org.bson.Document
 import ratpack.exec.Promise
 import ratpack.exec.Promise.value
@@ -28,7 +27,7 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
             val pollBsonDocument = Document.parse(pollJson)
 
             return pollsCollection.insertOne(pollBsonDocument)
-                    .map { it.map { _ -> pollBsonDocument }.map(this::mapBsonDocumentToDomainObject) }
+                    .map { it.map { _ -> pollBsonDocument }.map({ document -> mapBsonDocumentToDomainObject(document, null) }) }
 
         } catch (e: JsonProcessingException) {
             return value(invalid<InsertOneError, PollResponse.Poll>(InsertOneJsonProcessingError(e)))
@@ -36,18 +35,58 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
 
     }
 
-    fun retrievePoll(pollId: String?): Promise<Validation<FindOneError, PollResponse.Poll>> {
-        return pollsCollection.findOneById(pollId)
-                .map { it.map(this::mapBsonDocumentToDomainObject) }
+    fun replacePoll(pollId: String?, poll: PollEntity.Poll): Promise<Validation<ReplaceOneError, PollResponse.Poll>> {
+        try {
+            val pollJson = objectMapper.writeValueAsString(poll)
+            val pollBsonDocument = Document.parse(pollJson)
+
+            return pollsCollection.replaceOne(pollId, pollBsonDocument)
+                    .map { it.map { _ -> pollBsonDocument }.map { document -> mapBsonDocumentToDomainObject(document, pollId) } }
+
+        } catch (e: JsonProcessingException) {
+            return value(invalid<ReplaceOneError, PollResponse.Poll>(ReplaceOneError.ReplaceOneJsonProcessingError(e)))
+        }
+
     }
 
-    private fun mapBsonDocumentToDomainObject(document: Document): PollResponse.Poll {
+    fun retrievePoll(pollId: String?): Promise<Validation<FindOneError, PollResponse.Poll>> {
+        return pollsCollection.findOneById(pollId)
+                .map { it.map { document -> mapBsonDocumentToDomainObject(document, null) } }
+    }
+
+    private fun mapBsonDocumentToDomainObject(document: Document, pollId: String?): PollResponse.Poll {
         @Suppress("UNCHECKED_CAST")
         return PollResponse.Poll(
-                document.getObjectId("_id").toHexString(),
-                document.getString("topic"),
-                document["options"] as MutableList<String>,
-                emptyList()
+                id = pollId ?: document.getObjectId("_id").toHexString(),
+                topic = document.getString("topic"),
+                options = document["options"] as MutableList<String>,
+                votes = mapVotes(document)
         )
+    }
+
+    private fun mapVotes(document: Document): List<PollResponse.Vote> {
+        val votes = document["votes"]
+        if (votes == null) return emptyList()
+
+        @Suppress("UNCHECKED_CAST")
+        return (votes as MutableList<Document>).map {
+            PollResponse.Vote(
+                    voter = it.getString("voter"),
+                    selections = mapSelections(it)
+            )
+        }
+    }
+
+    private fun mapSelections(document: Document): List<PollResponse.Selection> {
+        val selections = document["selections"]
+        if (selections == null) return emptyList()
+
+        @Suppress("UNCHECKED_CAST")
+        return (selections as MutableList<Document>).map {
+            PollResponse.Selection(
+                    option = it.getString("option"),
+                    selected = PollResponse.SelectedResponse.valueOf(it.getString("selected"))
+            )
+        }
     }
 }

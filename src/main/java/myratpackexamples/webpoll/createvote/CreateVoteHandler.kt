@@ -7,15 +7,14 @@ import io.vavr.collection.Seq
 import io.vavr.collection.List
 import io.vavr.control.Validation
 import io.vavr.control.Validation.*
+import myratpackexamples.webpoll.*
 import myratpackexamples.webpoll.createvote.CreateVoteError.VoterMustBeNonEmpty
 import myratpackexamples.webpoll.createvote.CreateVoteError.InvalidValueForSelected
 import myratpackexamples.webpoll.createvote.CreateVoteError.UnknownOption
 import myratpackexamples.webpoll.createvote.CreateVoteError.TechnicalError
+import myratpackexamples.webpoll.createvote.CreateVoteError.UpdatingPollWithVoteFailed
 import myratpackexamples.webpoll.FindOneError.ExactlyOneElementExpected
 import myratpackexamples.webpoll.FindOneError.InvalidIdString
-import myratpackexamples.webpoll.PollRepository
-import myratpackexamples.webpoll.PollResponse
-import myratpackexamples.webpoll.ap
 import ratpack.exec.Promise
 import ratpack.handling.Context
 import ratpack.handling.Handler
@@ -29,16 +28,40 @@ class CreateVoteHandler @Inject constructor(val pollRepository: PollRepository) 
 
         val voteRequest = context.parse(Jackson.fromJson(VoteRequest.Vote::class.java))
 
-        poll.right(voteRequest).map { pair ->
-            pair.left.flatMap { VoteRequestValidator(it).validateRequest(pair.right) }
+        poll.right(voteRequest).flatMap { pair ->
+            pair.left.flatMap { poll ->
+                VoteRequestValidator(poll).validateRequest(pair.right)
+                        .map { addVoteToPoll(poll, it) }
+            }
+                    .flatMapPromise { replacePoll(pollId, it) }
         }.then {
             it.toEither().peek(context::createSuccessResponse).peekLeft(context::createErrorResponse)
         }
     }
 
+    private fun addVoteToPoll(poll: PollResponse.Poll, newVote: VoteRequestValidated.Vote): PollEntity.Poll {
+        return PollEntity.Poll(
+                id = poll.id,
+                topic = poll.topic,
+                options = poll.options,
+                votes = poll.votes.map { vote ->
+                    PollEntity.Vote(vote.voter, vote.selections.map {
+                        PollEntity.Selection(it.option!!, PollEntity.Selected.valueOf(it.selected!!.name))
+                    })
+                }.plus(PollEntity.Vote(newVote.voter, newVote.selections.map {
+                    PollEntity.Selection(it.option, PollEntity.Selected.valueOf(it.selected.name))
+                }))
+        )
+    }
+
     private fun retrievePoll(pollId: String?): Promise<Validation<Seq<CreateVoteError>, PollResponse.Poll>> {
         return pollRepository.retrievePoll(pollId)
                 .map { validation -> validation.mapError<Seq<CreateVoteError>> { error -> List.of(TechnicalError(error)) } }
+    }
+
+    private fun replacePoll(pollId: String?, poll: PollEntity.Poll): Promise<Validation<Seq<CreateVoteError>, PollResponse.Poll>> {
+        return pollRepository.replacePoll(pollId, poll)
+                .map { validation -> validation.mapError<Seq<CreateVoteError>> { error -> List.of(UpdatingPollWithVoteFailed(error)) } }
     }
 }
 
@@ -83,7 +106,7 @@ class VoteRequestValidator(val poll: PollResponse.Poll) {
 }
 
 private fun Context.createSuccessResponse(
-        @Suppress("UNUSED_PARAMETER") voteRequestValidated: VoteRequestValidated.Vote
+        @Suppress("UNUSED_PARAMETER") poll: PollResponse.Poll
 ) {
     response.status(HttpResponseStatus.CREATED.code())
     response.send("")
@@ -101,6 +124,7 @@ private fun mapErrorToResponseCode(error: CreateVoteError): HttpResponseStatus {
         is VoterMustBeNonEmpty -> BAD_REQUEST
         is InvalidValueForSelected -> BAD_REQUEST
         is UnknownOption -> BAD_REQUEST
+        is UpdatingPollWithVoteFailed -> INTERNAL_SERVER_ERROR
         is TechnicalError -> {
             when (error.findOneError) {
                 is InvalidIdString -> BAD_REQUEST
