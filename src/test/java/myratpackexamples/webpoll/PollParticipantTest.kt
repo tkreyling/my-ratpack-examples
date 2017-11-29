@@ -5,7 +5,7 @@ import io.netty.handler.codec.http.HttpHeaderNames.LOCATION
 import io.netty.handler.codec.http.HttpResponseStatus
 import myratpackexamples.webpoll.createpoll.PollRequest
 import myratpackexamples.webpoll.createvote.VoteRequest
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import ratpack.test.embed.EmbeddedApp
@@ -27,7 +27,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            Assertions.assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
         }
     }
 
@@ -41,7 +41,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post("poll/9999999/vote", voteJson)
 
             // Then
-            Assertions.assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
         }
     }
 
@@ -55,7 +55,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post("poll/59ecf1ec9bdc9640f8b4adca/vote", voteJson)
 
             // Then
-            Assertions.assertEquals(HttpResponseStatus.NOT_FOUND.code(), response.statusCode)
+            assertEquals(HttpResponseStatus.NOT_FOUND.code(), response.statusCode)
         }
     }
 
@@ -75,7 +75,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            Assertions.assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
         }
     }
 
@@ -97,7 +97,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            Assertions.assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
         }
     }
 
@@ -114,7 +114,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            Assertions.assertEquals(HttpResponseStatus.CREATED.code(), response.statusCode)
+            assertEquals(HttpResponseStatus.CREATED.code(), response.statusCode)
         }
     }
 
@@ -136,7 +136,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            Assertions.assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
         }
     }
 
@@ -155,11 +155,11 @@ internal class PollParticipantTest : TestHttpClientMixin {
             // Then
             val poll = httpClient.get(pollUri, PollResponse.Poll::class.java)
 
-            Assertions.assertEquals(1, poll.votes.size)
-            Assertions.assertEquals("Max Mustermann", poll.votes[0].voter)
-            Assertions.assertEquals(2, poll.votes[0].selections.size)
-            Assertions.assertEquals("basketball", poll.votes[0].selections[0].option)
-            Assertions.assertEquals("YES", poll.votes[0].selections[0].selected.toString())
+            assertEquals(1, poll.votes.size)
+            assertEquals("Max Mustermann", poll.votes[0].voter)
+            assertEquals(2, poll.votes[0].selections.size)
+            assertEquals("basketball", poll.votes[0].selections[0].option)
+            assertEquals("YES", poll.votes[0].selections[0].selected.toString())
         }
     }
 
