@@ -155,7 +155,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            val poll = httpClient.get(pollUri, Poll::class.java)
+            val poll = httpClient.get(pollUri, Poll::class)
 
             assertEquals(1, poll.votes.size)
             assertEquals("Max Mustermann", poll.votes[0].voter)

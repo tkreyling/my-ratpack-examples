@@ -46,7 +46,7 @@ internal class PollOwnerTest : TestHttpClientMixin {
 
             val pollUri = createResponse.headers[LOCATION]
 
-            val poll = httpClient.get(pollUri, PollResponse.Poll::class.java)
+            val poll = httpClient.get(pollUri, PollResponse.Poll::class)
 
             assertEquals("Sport to play on Friday", poll.topic)
             assertEquals(asList("basketball"), poll.options)
