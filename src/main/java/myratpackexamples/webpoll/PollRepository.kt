@@ -85,7 +85,7 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
         return (selections as MutableList<Document>).map {
             PollResponse.Selection(
                     option = it.getString("option"),
-                    selected = PollResponse.SelectedResponse.valueOf(it.getString("selected"))
+                    selected = PollResponse.Selected.valueOf(it.getString("selected"))
             )
         }
     }
