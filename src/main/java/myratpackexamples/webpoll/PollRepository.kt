@@ -8,6 +8,7 @@ import com.mongodb.async.client.MongoCollection
 import io.vavr.control.Validation
 import io.vavr.control.Validation.invalid
 import myratpackexamples.webpoll.InsertOneError.InsertOneJsonProcessingError
+import myratpackexamples.webpoll.PollResponse.*
 import org.bson.Document
 import ratpack.exec.Promise
 import ratpack.exec.Promise.value
@@ -21,7 +22,7 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
             return database.getCollection("polls")
         }
 
-    fun storePoll(poll: PollEntity.Poll): Promise<Validation<InsertOneError, PollResponse.Poll>> {
+    fun storePoll(poll: PollEntity.Poll): Promise<Validation<InsertOneError, Poll>> {
         try {
             val pollJson = objectMapper.writeValueAsString(poll)
             val pollBsonDocument = Document.parse(pollJson)
@@ -30,12 +31,12 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
                     .map { it.map { _ -> pollBsonDocument }.map({ document -> mapBsonDocumentToDomainObject(document, null) }) }
 
         } catch (e: JsonProcessingException) {
-            return value(invalid<InsertOneError, PollResponse.Poll>(InsertOneJsonProcessingError(e)))
+            return value(invalid<InsertOneError, Poll>(InsertOneJsonProcessingError(e)))
         }
 
     }
 
-    fun replacePoll(pollId: String?, poll: PollEntity.Poll): Promise<Validation<ReplaceOneError, PollResponse.Poll>> {
+    fun replacePoll(pollId: String?, poll: PollEntity.Poll): Promise<Validation<ReplaceOneError, Poll>> {
         try {
             val pollJson = objectMapper.writeValueAsString(poll)
             val pollBsonDocument = Document.parse(pollJson)
@@ -44,19 +45,19 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
                     .map { it.map { _ -> pollBsonDocument }.map { document -> mapBsonDocumentToDomainObject(document, pollId) } }
 
         } catch (e: JsonProcessingException) {
-            return value(invalid<ReplaceOneError, PollResponse.Poll>(ReplaceOneError.ReplaceOneJsonProcessingError(e)))
+            return value(invalid<ReplaceOneError, Poll>(ReplaceOneError.ReplaceOneJsonProcessingError(e)))
         }
 
     }
 
-    fun retrievePoll(pollId: String?): Promise<Validation<FindOneError, PollResponse.Poll>> {
+    fun retrievePoll(pollId: String?): Promise<Validation<FindOneError, Poll>> {
         return pollsCollection.findOneById(pollId)
                 .map { it.map { document -> mapBsonDocumentToDomainObject(document, null) } }
     }
 
-    private fun mapBsonDocumentToDomainObject(document: Document, pollId: String?): PollResponse.Poll {
+    private fun mapBsonDocumentToDomainObject(document: Document, pollId: String?): Poll {
         @Suppress("UNCHECKED_CAST")
-        return PollResponse.Poll(
+        return Poll(
                 id = pollId ?: document.getObjectId("_id").toHexString(),
                 topic = document.getString("topic"),
                 options = document["options"] as MutableList<String>,
@@ -64,28 +65,28 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
         )
     }
 
-    private fun mapVotes(document: Document): List<PollResponse.Vote> {
+    private fun mapVotes(document: Document): List<Vote> {
         val votes = document["votes"]
         if (votes == null) return emptyList()
 
         @Suppress("UNCHECKED_CAST")
         return (votes as MutableList<Document>).map {
-            PollResponse.Vote(
+            Vote(
                     voter = it.getString("voter"),
                     selections = mapSelections(it)
             )
         }
     }
 
-    private fun mapSelections(document: Document): List<PollResponse.Selection> {
+    private fun mapSelections(document: Document): List<Selection> {
         val selections = document["selections"]
         if (selections == null) return emptyList()
 
         @Suppress("UNCHECKED_CAST")
         return (selections as MutableList<Document>).map {
-            PollResponse.Selection(
+            Selection(
                     option = it.getString("option"),
-                    selected = PollResponse.Selected.valueOf(it.getString("selected"))
+                    selected = Selected.valueOf(it.getString("selected"))
             )
         }
     }
