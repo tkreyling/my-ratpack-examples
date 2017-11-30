@@ -2,9 +2,11 @@ package myratpackexamples.webpoll
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.netty.handler.codec.http.HttpHeaderNames.LOCATION
-import io.netty.handler.codec.http.HttpResponseStatus
+import io.netty.handler.codec.http.HttpResponseStatus.*
+import myratpackexamples.webpoll.PollResponse.*
 import myratpackexamples.webpoll.createpoll.PollRequest
-import myratpackexamples.webpoll.createvote.VoteRequest
+import myratpackexamples.webpoll.createvote.VoteRequest.Selection
+import myratpackexamples.webpoll.createvote.VoteRequest.Vote
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -27,7 +29,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+            assertEquals(BAD_REQUEST.code(), response.statusCode)
         }
     }
 
@@ -41,7 +43,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post("poll/9999999/vote", voteJson)
 
             // Then
-            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+            assertEquals(BAD_REQUEST.code(), response.statusCode)
         }
     }
 
@@ -55,7 +57,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post("poll/59ecf1ec9bdc9640f8b4adca/vote", voteJson)
 
             // Then
-            assertEquals(HttpResponseStatus.NOT_FOUND.code(), response.statusCode)
+            assertEquals(NOT_FOUND.code(), response.statusCode)
         }
     }
 
@@ -75,7 +77,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+            assertEquals(BAD_REQUEST.code(), response.statusCode)
         }
     }
 
@@ -91,13 +93,13 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val voteJson = vote(
                     voter = someValidVoter(),
                     selections = listOf(
-                            VoteRequest.Selection("basketball", "some invalid value")
+                            Selection("basketball", "some invalid value")
                     )
             )
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+            assertEquals(BAD_REQUEST.code(), response.statusCode)
         }
     }
 
@@ -114,7 +116,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            assertEquals(HttpResponseStatus.CREATED.code(), response.statusCode)
+            assertEquals(CREATED.code(), response.statusCode)
         }
     }
 
@@ -130,13 +132,13 @@ internal class PollParticipantTest : TestHttpClientMixin {
             val voteJson = vote(
                     voter = someValidVoter(),
                     selections = listOf(
-                            VoteRequest.Selection("handball", "yes")
+                            Selection("handball", "yes")
                     )
             )
             val response = httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), response.statusCode)
+            assertEquals(BAD_REQUEST.code(), response.statusCode)
         }
     }
 
@@ -153,7 +155,7 @@ internal class PollParticipantTest : TestHttpClientMixin {
             httpClient.post(pollUri + "/vote", voteJson)
 
             // Then
-            val poll = httpClient.get(pollUri, PollResponse.Poll::class.java)
+            val poll = httpClient.get(pollUri, Poll::class.java)
 
             assertEquals(1, poll.votes.size)
             assertEquals("Max Mustermann", poll.votes[0].voter)
@@ -180,16 +182,16 @@ internal class PollParticipantTest : TestHttpClientMixin {
 
     private fun someValidVoter() = "Max Mustermann"
 
-    private fun someValidSelections(): List<VoteRequest.Selection> {
+    private fun someValidSelections(): List<Selection> {
         return listOf(
-                VoteRequest.Selection("basketball", "yes"),
-                VoteRequest.Selection("soccer", "no")
+                Selection("basketball", "yes"),
+                Selection("soccer", "no")
         )
     }
 
     private fun vote(
             voter: String?,
-            selections: List<VoteRequest.Selection>?
-    ) = objectMapper.writeValueAsString(VoteRequest.Vote(voter, selections))
+            selections: List<Selection>?
+    ) = objectMapper.writeValueAsString(Vote(voter, selections))
 
 }
