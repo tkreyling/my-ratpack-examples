@@ -28,7 +28,7 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
             val pollBsonDocument = Document.parse(pollJson)
 
             return pollsCollection.insertOne(pollBsonDocument)
-                    .map { it.map { _ -> pollBsonDocument }.map({ document -> mapBsonDocumentToDomainObject(document, null) }) }
+                    .map { it.map { _ -> pollBsonDocument }.map { document -> mapBsonDocumentToDomainObject(document) } }
 
         } catch (e: JsonProcessingException) {
             return value(invalid<InsertOneError, Poll>(InsertOneJsonProcessingError(e)))
@@ -52,10 +52,10 @@ class PollRepository @Inject constructor(val objectMapper: ObjectMapper) {
 
     fun retrievePoll(pollId: String?): Promise<Validation<FindOneError, Poll>> {
         return pollsCollection.findOneById(pollId)
-                .map { it.map { document -> mapBsonDocumentToDomainObject(document, null) } }
+                .map { it.map { document -> mapBsonDocumentToDomainObject(document) } }
     }
 
-    private fun mapBsonDocumentToDomainObject(document: Document, pollId: String?): Poll {
+    private fun mapBsonDocumentToDomainObject(document: Document, pollId: String? = null): Poll {
         @Suppress("UNCHECKED_CAST")
         return Poll(
                 id = pollId ?: document.getObjectId("_id").toHexString(),
